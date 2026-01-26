@@ -13,21 +13,23 @@ namespace Blinky
 {
     public partial class Form1 : Form
     {
-        private Image bild_white = Image.FromFile("white.jpg");
-        private Image bild_black = Image.FromFile("black.jpg");
+        private Image img_white = Image.FromFile("white.jpg");
+        private Image img_black = Image.FromFile("black.jpg");
         
         int Frequency = 8;
-        bool HighRes = Stopwatch.IsHighResolution;
+        bool HighRes = Stopwatch.IsHighResolution; //more precise transmission using ticks instead of ms
         UInt32 Data;
 
         public Form1()
         {
             InitializeComponent();
 
+            HighRes = false; //TODO: high res is currently not working stable
+
             if (HighRes)
                 pictureBox1.BackColor = Color.Black;
             else
-                pictureBox1.Image = bild_black;
+                pictureBox1.Image = img_black;
         }
         
         private void buttonTransmitValue_Click(object sender, EventArgs e)
@@ -42,7 +44,7 @@ namespace Blinky
         {
             buttonTransmitTimestamp.Enabled = false;
             buttonTransmitValue.Enabled = false;
-            Data = CreateTimeData(Frequency);
+            Data = CreateTimeData();
             backgroundWorker1.RunWorkerAsync();
         }
         
@@ -72,44 +74,10 @@ namespace Blinky
                 LowResTransmission(Data, 1000.0F / Frequency);
             }
         }
-
-        private void LowResTransmission(UInt32 data, float interval_ms)
-        {
-            float nextTimestamp = 0;
-            int index = 0;
-            bool start = true;
-
-            Stopwatch sw = new Stopwatch();
-            sw.Start();
-            while (true)
-            {
-                if (sw.ElapsedMilliseconds > nextTimestamp)
-                {
-                    nextTimestamp += interval_ms;
-                    if (start)
-                    {
-                        pictureBox1.Image = bild_white;
-                        start = false;
-                    }
-                    else
-                    {
-                        if (((data << index) & 0x80000000) == 0)
-                            pictureBox1.Image = bild_black;
-                        else
-                            pictureBox1.Image = bild_white;
-
-                        index++;
-                        if (index == 32)
-                            break;
-                    }
-                }
-            }
-
-            System.Threading.Thread.Sleep((int)interval_ms); //wait for last bit to be received
-
-            pictureBox1.Image = bild_black;
-        }
-
+        
+        /// <summary>
+        /// Flicker the screen using pictureBox1.BackColor with a high resolution (ticks)
+        /// </summary>
         private void HighResTransmission(UInt32 data, long intervalTicks)
         {
             long nextTick = Stopwatch.GetTimestamp();
@@ -124,14 +92,17 @@ namespace Blinky
 
                 if (i == -1)
                 {
+                    //rising edge to start transmission
                     Show(Color.White);
                 }
                 else if(i == 32)
                 {
+                    //back to black at end of transmission
                     Show(Color.Black);
                 }
                 else
                 {
+                    //transmit data bit by bit
                     if (((data << i) & 0x80000000) == 0)
                         Show(Color.Black);
                     else
@@ -142,6 +113,49 @@ namespace Blinky
             }
         }
 
+
+        /// <summary>
+        /// Flicker the screen using pictureBox1.Image with a low resolution (ms)
+        /// </summary>
+        private void LowResTransmission(UInt32 data, float interval_ms)
+        {
+            float nextTimestamp = 0;
+            int index = 0;
+            bool start = true;
+
+            Stopwatch sw = new Stopwatch();
+            sw.Start();
+            while (true)
+            {
+                if (sw.ElapsedMilliseconds > nextTimestamp)
+                {
+                    if (start)
+                    {
+                        pictureBox1.Image = img_white;
+                        start = false;
+                        nextTimestamp += interval_ms / 2;
+                    }
+                    else
+                    {
+                        if (((data << index) & 0x80000000) == 0)
+                            pictureBox1.Image = img_black;
+                        else
+                            pictureBox1.Image = img_white;
+                        
+                        index++;
+                        if (index == 32)
+                            break;
+
+                        nextTimestamp += interval_ms;
+                    }
+                }
+            }
+
+            System.Threading.Thread.Sleep((int)interval_ms); //wait for last bit to be received
+
+            pictureBox1.Image = img_black;
+        }
+
         private void Show(Color color)
         {
             pictureBox1.Invoke(new MethodInvoker(delegate ()
@@ -150,7 +164,16 @@ namespace Blinky
             }));
         }
 
-        private UInt32 CreateTimeData(int frequency)
+        /// <summary>
+        /// Create 32 bit containing timestamp
+        /// 4 Bit Header (0x1)
+        /// 6 Bit Seconds
+        /// 6 Bit Minutes
+        /// 5 Bit Hours
+        /// 3 Bit Unused
+        /// 8 Bit Checksum
+        /// </summary>
+        private UInt32 CreateTimeData()
         {
             DateTime dt = DateTime.Now;
             int header = 1;
@@ -163,6 +186,15 @@ namespace Blinky
             return data;
         }
 
+        /// <summary>
+        /// Create 32 bit containing current date
+        /// 4 Bit Header (0x2)
+        /// 5 Bit Day
+        /// 4 Bit Month
+        /// 6 Bit Year (current year - 2020)
+        /// 5 Bit Unused
+        /// 8 Bit Checksum
+        /// </summary>
         private UInt32 CreateDateData()
         {
             DateTime dt = DateTime.Now;
@@ -176,6 +208,9 @@ namespace Blinky
             return data;
         }
 
+        /// <summary>
+        /// calculate checksum from first 3 byte in data
+        /// </summary>
         private byte CalculateChecksum(UInt32 data)
         {
             UInt32 checksum = (data >> 24 & 0xFF) + (data >> 16 & 0xFF) + (data >> 8 & 0xFF);
