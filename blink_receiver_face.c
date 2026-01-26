@@ -159,7 +159,7 @@ bool blink_receiver_face_loop(movement_event_t event, void *context) {
                     // watch is polling sensor with increased frequency, waiting for a riging edge (dark -> bright)
                     state->light_level = adc_get_analog_value(HAL_GPIO_IRSENSE_pin());      
                     if (state->light_level < state->light_level_border) { //rising edge detected: transmission has started
-                        watch_buzzer_play_note(BUZZER_NOTE_E6, 100);  
+                        //watch_buzzer_play_note(BUZZER_NOTE_E6, 100);  
                         state->bits_received = 0;
                         state->data = 0;
                         state->mode = BLINK_RECEIVER_MODE_RECORD;
@@ -175,7 +175,7 @@ bool blink_receiver_face_loop(movement_event_t event, void *context) {
                         }
                         state->bits_received++;
                         if (state->bits_received == 32) { // transmission complete                 
-                            watch_buzzer_play_note(BUZZER_NOTE_E6, 100);
+                            //watch_buzzer_play_note(BUZZER_NOTE_E6, 100);
                             state->mode = BLINK_RECEIVER_MODE_IDLE;   
                             char outputString9[9];
                             snprintf(outputString9, 9, "%08x", state->data);
@@ -194,7 +194,7 @@ bool blink_receiver_face_loop(movement_event_t event, void *context) {
                 case BLINK_RECEIVER_MODE_DISPLAY_CURRENT_LIGHT:
                 case BLINK_RECEIVER_MODE_IDLE:
                     // start listening
-                    watch_buzzer_play_note(BUZZER_NOTE_E5, 100);
+                    //watch_buzzer_play_note(BUZZER_NOTE_E5, 100);
                     state->mode = BLINK_RECEIVER_MODE_WAIT_FOR_RISING_EDGE;
                     movement_request_tick_frequency(state->frequency * 2); //increase frequency to make sure that the first rising edge is detected as fast as possible
                     watch_display_string("        ", 2);
@@ -203,7 +203,7 @@ bool blink_receiver_face_loop(movement_event_t event, void *context) {
                 case BLINK_RECEIVER_MODE_WAIT_FOR_RISING_EDGE:
                 case BLINK_RECEIVER_MODE_RECORD:
                     // interrupt listening
-                    watch_buzzer_play_note(BUZZER_NOTE_E4, 200);
+                    //watch_buzzer_play_note(BUZZER_NOTE_E4, 200);
                     state->mode = BLINK_RECEIVER_MODE_IDLE;
                     movement_request_tick_frequency(state->frequency); //switch back to normal frequency
                     break;
