@@ -19,12 +19,13 @@ namespace Blinky
         int Frequency = 8;
         bool HighRes = Stopwatch.IsHighResolution; //more precise transmission using ticks instead of ms
         UInt32 Data;
+        DateTime StartAt;
 
         public Form1()
         {
             InitializeComponent();
 
-            HighRes = false; //TODO: high res is currently not working stable
+            HighRes = true; //TODO: high res is currently not working stable
 
             if (HighRes)
                 pictureBox1.BackColor = Color.Black;
@@ -37,6 +38,7 @@ namespace Blinky
             buttonTransmitTimestamp.Enabled = false;
             buttonTransmitValue.Enabled = false;
             Data = UInt32.Parse(textBoxTxValue.Text.Replace("0x", ""), System.Globalization.NumberStyles.HexNumber);
+            StartAt = DateTime.Now;
             backgroundWorker1.RunWorkerAsync();
         }
 
@@ -44,10 +46,19 @@ namespace Blinky
         {
             buttonTransmitTimestamp.Enabled = false;
             buttonTransmitValue.Enabled = false;
-            Data = CreateTimeData();
+            Data = CreateTimeData(out StartAt, checkBox1.Checked);
             backgroundWorker1.RunWorkerAsync();
         }
-        
+
+        private void buttonTransmitDate_Click(object sender, EventArgs e)
+        {
+            buttonTransmitTimestamp.Enabled = false;
+            buttonTransmitValue.Enabled = false;
+            Data = CreateDateData();
+            StartAt = DateTime.Now;
+            backgroundWorker1.RunWorkerAsync();
+        }
+
         private void backgroundWorker1_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
             buttonTransmitTimestamp.Enabled = true;
@@ -56,9 +67,9 @@ namespace Blinky
 
         private void backgroundWorker1_DoWork(object sender, DoWorkEventArgs e)
         {
-            label1.Invoke(new MethodInvoker(delegate ()
+            textBox1.Invoke(new MethodInvoker(delegate ()
             {
-                label1.Text = "0x" + Data.ToString("X");
+                textBox1.Text = "0x" + Data.ToString("X");
             }));
             
             if (HighRes)
@@ -67,7 +78,7 @@ namespace Blinky
                 double microseconds = 1000.0 * 1000.0 / (float)Frequency;
                 long intervalTicks = (long)(microseconds * ticksPerMicrosecond);
 
-                HighResTransmission(Data, intervalTicks);
+                HighResTransmission(Data, intervalTicks, StartAt);
             }
             else
             {
@@ -78,8 +89,13 @@ namespace Blinky
         /// <summary>
         /// Flicker the screen using pictureBox1.BackColor with a high resolution (ticks)
         /// </summary>
-        private void HighResTransmission(UInt32 data, long intervalTicks)
+        private void HighResTransmission(UInt32 data, long intervalTicks, DateTime startAt)
         {
+            while(DateTime.Now < startAt)
+            {
+
+            }
+
             long nextTick = Stopwatch.GetTimestamp();
 
             for (int i = -1; i < 33; i++)
@@ -111,6 +127,8 @@ namespace Blinky
 
                 nextTick += intervalTicks; // Schedule next execution
             }
+            
+            DateTime ft = DateTime.Now;
         }
 
 
@@ -150,7 +168,7 @@ namespace Blinky
                     }
                 }
             }
-
+            
             System.Threading.Thread.Sleep((int)interval_ms); //wait for last bit to be received
 
             pictureBox1.Image = img_black;
@@ -173,10 +191,21 @@ namespace Blinky
         /// 3 Bit Unused
         /// 8 Bit Checksum
         /// </summary>
-        private UInt32 CreateTimeData()
+        private UInt32 CreateTimeData(out DateTime startAt, bool exact)
         {
+            int secondDelay = 2;
+            double ms = (1000 / Frequency);
             DateTime dt = DateTime.Now;
-            int header = 1;
+            
+            startAt = dt.AddSeconds(secondDelay);
+            startAt = startAt.AddMilliseconds(1000 - dt.Millisecond);
+            startAt = startAt.AddMilliseconds(-125);
+
+            dt = startAt;
+            dt = dt.AddMilliseconds(33 * ms);//.AddMilliseconds(-ms);
+            //if (!exact)
+            //    dt = dt.AddMilliseconds(-1000);
+            int header = exact ? 3 : 1;
             int sec = dt.Second;
             int min = dt.Minute;
             int hour = dt.Hour;
