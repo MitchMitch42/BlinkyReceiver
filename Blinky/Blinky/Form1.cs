@@ -13,24 +13,14 @@ namespace Blinky
 {
     public partial class Form1 : Form
     {
-        private Image img_white = Image.FromFile("white.jpg");
-        private Image img_black = Image.FromFile("black.jpg");
-        
         int Frequency = 8;
-        bool HighRes = Stopwatch.IsHighResolution; //more precise transmission using ticks instead of ms
         UInt32 Data;
         DateTime StartAt;
 
         public Form1()
         {
-            InitializeComponent();
-
-            HighRes = true; //TODO: high res is currently not working stable
-
-            if (HighRes)
-                pictureBox1.BackColor = Color.Black;
-            else
-                pictureBox1.Image = img_black;
+            InitializeComponent();      
+            pictureBox1.BackColor = Color.Black;
         }
         
         private void buttonTransmitValue_Click(object sender, EventArgs e)
@@ -72,18 +62,11 @@ namespace Blinky
                 textBox1.Text = "0x" + Data.ToString("X");
             }));
             
-            if (HighRes)
-            {
-                double ticksPerMicrosecond = (double)Stopwatch.Frequency / 1_000_000;
-                double microseconds = 1000.0 * 1000.0 / (float)Frequency;
-                long intervalTicks = (long)(microseconds * ticksPerMicrosecond);
+            double ticksPerMicrosecond = (double)Stopwatch.Frequency / 1_000_000;
+            double microseconds = 1000.0 * 1000.0 / (float)Frequency;
+            long intervalTicks = (long)(microseconds * ticksPerMicrosecond);
 
-                HighResTransmission(Data, intervalTicks, StartAt);
-            }
-            else
-            {
-                LowResTransmission(Data, 1000.0F / Frequency);
-            }
+            HighResTransmission(Data, intervalTicks, StartAt);
         }
         
         /// <summary>
@@ -130,50 +113,7 @@ namespace Blinky
             
             DateTime ft = DateTime.Now;
         }
-
-
-        /// <summary>
-        /// Flicker the screen using pictureBox1.Image with a low resolution (ms)
-        /// </summary>
-        private void LowResTransmission(UInt32 data, float interval_ms)
-        {
-            float nextTimestamp = 0;
-            int index = 0;
-            bool start = true;
-
-            Stopwatch sw = new Stopwatch();
-            sw.Start();
-            while (true)
-            {
-                if (sw.ElapsedMilliseconds > nextTimestamp)
-                {
-                    if (start)
-                    {
-                        pictureBox1.Image = img_white;
-                        start = false;
-                        nextTimestamp += interval_ms / 2;
-                    }
-                    else
-                    {
-                        if (((data << index) & 0x80000000) == 0)
-                            pictureBox1.Image = img_black;
-                        else
-                            pictureBox1.Image = img_white;
-                        
-                        index++;
-                        if (index == 32)
-                            break;
-
-                        nextTimestamp += interval_ms;
-                    }
-                }
-            }
-            
-            System.Threading.Thread.Sleep((int)interval_ms); //wait for last bit to be received
-
-            pictureBox1.Image = img_black;
-        }
-
+        
         private void Show(Color color)
         {
             pictureBox1.Invoke(new MethodInvoker(delegate ()
