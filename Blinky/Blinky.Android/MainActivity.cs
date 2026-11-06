@@ -20,12 +20,12 @@ namespace Blinky.Android;
     ScreenOrientation = ScreenOrientation.Portrait)]
 public sealed class MainActivity : Activity
 {
-    private const int Frequency = 8;
+    private const int DefaultFrequency = 16;
 
     private LinearLayout? _home;
     private View? _flashView;
     private EditText? _valueInput;
-    private CheckBox? _exactCheckBox;
+    private EditText? _frequencyInput;
     private TextView? _dataLabel;
     private Button[] _transmitButtons = Array.Empty<Button>();
     private CancellationTokenSource? _transmissionCancellation;
@@ -92,6 +92,21 @@ public sealed class MainActivity : Activity
         title.SetTextColor(Color.White);
         _home.AddView(title, MatchWrap());
 
+        var frequencyLabel = new TextView(this) { Text = "Frequency (Hz)" };
+        frequencyLabel.SetTextColor(Color.White);
+        _home.AddView(frequencyLabel, MatchWrap(Dp(8)));
+
+        _frequencyInput = new EditText(this)
+        {
+            Text = DefaultFrequency.ToString(CultureInfo.InvariantCulture),
+            Hint = "Enter a positive whole number",
+            InputType = InputTypes.ClassNumber
+        };
+        _frequencyInput.SetSingleLine(true);
+        _frequencyInput.SetTextColor(Color.White);
+        _frequencyInput.SetHintTextColor(Color.LightGray);
+        _home.AddView(_frequencyInput, MatchWrap());
+
         _valueInput = new EditText(this)
         {
             Text = "0x12345678",
@@ -106,10 +121,6 @@ public sealed class MainActivity : Activity
         _valueInput.SetSelectAllOnFocus(true);
         _home.AddView(_valueInput, MatchWrap(Dp(12)));
 
-        _exactCheckBox = new CheckBox(this) { Text = "Exact timestamp" };
-        _exactCheckBox.SetTextColor(Color.White);
-        _home.AddView(_exactCheckBox, MatchWrap());
-
         _dataLabel = new TextView(this)
         {
             Text = "Ready to transmit",
@@ -120,19 +131,33 @@ public sealed class MainActivity : Activity
 
         var timestampButton = MakeButton("Transmit timestamp", async () =>
         {
-            var data = TransmissionProtocol.CreateTimeData(
-                out var startAt,
-                _exactCheckBox!.Checked,
-                DateTime.Now);
-            await StartTransmissionAsync(data, startAt);
+            if (!TryGetFrequency(out var frequency))
+                return;
+
+            var data = TransmissionProtocol.CreateTimeData(out var startAt, 1, DateTime.Now, frequency);
+            await StartTransmissionAsync(new[] { data }, startAt, frequency);
         });
         var dateButton = MakeButton("Transmit date", async () =>
         {
-            var data = TransmissionProtocol.CreateDateData(DateTime.Now);
-            await StartTransmissionAsync(data, DateTime.Now);
+            if (!TryGetFrequency(out var frequency))
+                return;
+
+            var data = TransmissionProtocol.CreateDateData(DateTime.Now, 2);
+            await StartTransmissionAsync(new[] { data }, DateTime.Now, frequency);
+        });
+        var dateTimeButton = MakeButton("Date/time", async () =>
+        {
+            if (!TryGetFrequency(out var frequency))
+                return;
+
+            var data = TransmissionProtocol.CreateDateTimeData(out var startAt, DateTime.Now, frequency);
+            await StartTransmissionAsync(data, startAt, frequency);
         });
         var valueButton = MakeButton("Transmit value", async () =>
         {
+            if (!TryGetFrequency(out var frequency))
+                return;
+
             if (!TransmissionProtocol.TryParseHexData(_valueInput!.Text, out var data))
             {
                 new AlertDialog.Builder(this)
@@ -143,14 +168,35 @@ public sealed class MainActivity : Activity
                 return;
             }
 
-            await StartTransmissionAsync(data, DateTime.Now);
+            await StartTransmissionAsync(new[] { data }, DateTime.Now, frequency);
         });
 
-        _transmitButtons = new[] { timestampButton, dateButton, valueButton };
+        _transmitButtons = new[] { timestampButton, dateButton, dateTimeButton, valueButton };
         _home.AddView(timestampButton, MatchWrap(Dp(8)));
         _home.AddView(dateButton, MatchWrap(Dp(8)));
+        _home.AddView(dateTimeButton, MatchWrap(Dp(8)));
         _home.AddView(valueButton, MatchWrap(Dp(8)));
         SetContentView(_home);
+    }
+
+    private bool TryGetFrequency(out int frequency)
+    {
+        if (int.TryParse(
+                _frequencyInput?.Text,
+                NumberStyles.Integer,
+                CultureInfo.InvariantCulture,
+                out frequency)
+            && frequency > 0)
+        {
+            return true;
+        }
+
+        new AlertDialog.Builder(this)
+            .SetTitle("Invalid frequency")
+            .SetMessage("Enter a positive whole number of hertz.")
+            .SetPositiveButton("OK", (_, _) => { })
+            .Show();
+        return false;
     }
 
     private Button MakeButton(string text, Func<Task> onClick)
@@ -160,7 +206,7 @@ public sealed class MainActivity : Activity
         return button;
     }
 
-    private async Task StartTransmissionAsync(uint data, DateTime startAt)
+    private async Task StartTransmissionAsync(uint[] data, DateTime startAt, int frequency)
     {
         if (_transmitting)
             return;
@@ -169,7 +215,8 @@ public sealed class MainActivity : Activity
         foreach (var button in _transmitButtons)
             button.Enabled = false;
 
-        _dataLabel!.Text = $"Transmitting 0x{data:X8}";
+        var dataText = string.Join(" / ", Array.ConvertAll(data, value => $"0x{value:X}"));
+        _dataLabel!.Text = dataText;
         Window!.AddFlags(WindowManagerFlags.KeepScreenOn);
         _transmissionCancellation = new CancellationTokenSource();
         var cancellationToken = _transmissionCancellation.Token;
@@ -179,7 +226,11 @@ public sealed class MainActivity : Activity
 
         try
         {
-            await TransmitAsync(data, startAt, cancellationToken);
+            foreach (var value in data)
+            {
+                await TransmitAsync(value, startAt, frequency, cancellationToken);
+                startAt = DateTime.Now;
+            }
         }
         catch (System.OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
@@ -193,7 +244,7 @@ public sealed class MainActivity : Activity
                 SetContentView(_home);
                 foreach (var button in _transmitButtons)
                     button.Enabled = true;
-                _dataLabel!.Text = $"Last value: 0x{data:X8}";
+                _dataLabel!.Text = dataText;
             }
 
             _transmissionCancellation?.Dispose();
@@ -202,14 +253,18 @@ public sealed class MainActivity : Activity
         }
     }
 
-    private async Task TransmitAsync(uint data, DateTime startAt, CancellationToken cancellationToken)
+    private async Task TransmitAsync(
+        uint data,
+        DateTime startAt,
+        int frequency,
+        CancellationToken cancellationToken)
     {
         var startDelay = startAt - DateTime.Now;
         if (startDelay > TimeSpan.Zero)
             await Task.Delay(startDelay, cancellationToken);
 
         var timer = Stopwatch.StartNew();
-        var intervalTicks = Stopwatch.Frequency / Frequency;
+        var intervalTicks = (long)(Stopwatch.Frequency / (double)frequency);
 
         for (var step = 0; step <= 33; step++)
         {
@@ -268,14 +323,27 @@ public sealed class MainActivity : Activity
 
 internal static class TransmissionProtocol
 {
-    public static uint CreateTimeData(out DateTime startAt, bool exact, DateTime now)
+    public static uint CreateTimeData(out DateTime startAt, int header, DateTime now, int frequency)
     {
-        startAt = now.AddSeconds(2)
-            .AddMilliseconds(1000 - now.Millisecond)
-            .AddMilliseconds(-125);
+        return CreateTimeData(out startAt, header, now, frequency, 33);
+    }
 
-        var timestamp = startAt.AddMilliseconds(33 * (1000 / 8));
-        var header = exact ? 3 : 1;
+    public static uint[] CreateDateTimeData(out DateTime startAt, DateTime now, int frequency)
+    {
+        var timeData = CreateTimeData(out startAt, 5, now, frequency, 66);
+        var dateData = CreateDateData(now, 4);
+        return new[] { dateData, timeData };
+    }
+
+    private static uint CreateTimeData(
+        out DateTime startAt,
+        int header,
+        DateTime now,
+        int frequency,
+        int bitOffset)
+    {
+        startAt = now.AddMilliseconds(1000 - now.Millisecond);
+        var timestamp = startAt.AddMilliseconds(bitOffset * (1000 / frequency));
         var data = ((uint)header << 28)
             | ((uint)timestamp.Second << 22)
             | ((uint)timestamp.Minute << 16)
@@ -284,9 +352,9 @@ internal static class TransmissionProtocol
         return AddChecksum(data);
     }
 
-    public static uint CreateDateData(DateTime now)
+    public static uint CreateDateData(DateTime now, int header)
     {
-        var data = (2u << 28)
+        var data = ((uint)header << 28)
             | ((uint)now.Day << 23)
             | ((uint)now.Month << 19)
             | ((uint)(now.Year - 2020) << 13);
