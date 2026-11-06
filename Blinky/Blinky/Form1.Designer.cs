@@ -34,6 +34,7 @@
             this.buttonTransmitValue = new System.Windows.Forms.Button();
             this.textBoxTxValue = new System.Windows.Forms.TextBox();
             this.buttonTransmitDate = new System.Windows.Forms.Button();
+            this.buttonTransmitDateTime = new System.Windows.Forms.Button();
             this.textBox1 = new System.Windows.Forms.TextBox();
             this.checkBox1 = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
@@ -96,6 +97,17 @@
             this.buttonTransmitDate.UseVisualStyleBackColor = false;
             this.buttonTransmitDate.Click += new System.EventHandler(this.buttonTransmitDate_Click);
             // 
+            // buttonTransmitDateTime
+            // 
+            this.buttonTransmitDateTime.BackColor = System.Drawing.SystemColors.ControlDarkDark;
+            this.buttonTransmitDateTime.Location = new System.Drawing.Point(174, 41);
+            this.buttonTransmitDateTime.Name = "buttonTransmitDateTime";
+            this.buttonTransmitDateTime.Size = new System.Drawing.Size(101, 23);
+            this.buttonTransmitDateTime.TabIndex = 8;
+            this.buttonTransmitDateTime.Text = "Date/time";
+            this.buttonTransmitDateTime.UseVisualStyleBackColor = false;
+            this.buttonTransmitDateTime.Click += new System.EventHandler(this.buttonTransmitDateTime_Click);
+            // 
             // textBox1
             // 
             this.textBox1.BackColor = System.Drawing.SystemColors.ControlDarkDark;
@@ -124,6 +136,7 @@
             this.ClientSize = new System.Drawing.Size(388, 427);
             this.Controls.Add(this.checkBox1);
             this.Controls.Add(this.textBox1);
+            this.Controls.Add(this.buttonTransmitDateTime);
             this.Controls.Add(this.buttonTransmitDate);
             this.Controls.Add(this.textBoxTxValue);
             this.Controls.Add(this.buttonTransmitValue);
@@ -145,8 +158,8 @@
         private System.Windows.Forms.Button buttonTransmitValue;
         private System.Windows.Forms.TextBox textBoxTxValue;
         private System.Windows.Forms.Button buttonTransmitDate;
+        private System.Windows.Forms.Button buttonTransmitDateTime;
         private System.Windows.Forms.TextBox textBox1;
         private System.Windows.Forms.CheckBox checkBox1;
     }
 }
-

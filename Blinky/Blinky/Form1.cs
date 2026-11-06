@@ -14,7 +14,7 @@ namespace Blinky
     public partial class Form1 : Form
     {
         int Frequency = 8;
-        UInt32 Data;
+        List<UInt32> Data;
         DateTime StartAt;
 
         public Form1()
@@ -26,8 +26,10 @@ namespace Blinky
         private void buttonTransmitValue_Click(object sender, EventArgs e)
         {
             buttonTransmitTimestamp.Enabled = false;
+            buttonTransmitDate.Enabled = false;
+            buttonTransmitDateTime.Enabled = false;
             buttonTransmitValue.Enabled = false;
-            Data = UInt32.Parse(textBoxTxValue.Text.Replace("0x", ""), System.Globalization.NumberStyles.HexNumber);
+            Data = new List<UInt32> { UInt32.Parse(textBoxTxValue.Text.Replace("0x", ""), System.Globalization.NumberStyles.HexNumber) };
             StartAt = DateTime.Now;
             backgroundWorker1.RunWorkerAsync();
         }
@@ -35,23 +37,39 @@ namespace Blinky
         private void buttonTransmitTimestamp_Click(object sender, EventArgs e)
         {
             buttonTransmitTimestamp.Enabled = false;
+            buttonTransmitDate.Enabled = false;
+            buttonTransmitDateTime.Enabled = false;
             buttonTransmitValue.Enabled = false;
-            Data = CreateTimeData(out StartAt, checkBox1.Checked);
+            Data = new List<UInt32> { CreateTimeData(out StartAt, checkBox1.Checked ? 3 : 1) };
             backgroundWorker1.RunWorkerAsync();
         }
 
         private void buttonTransmitDate_Click(object sender, EventArgs e)
         {
             buttonTransmitTimestamp.Enabled = false;
+            buttonTransmitDate.Enabled = false;
+            buttonTransmitDateTime.Enabled = false;
             buttonTransmitValue.Enabled = false;
-            Data = CreateDateData();
+            Data = new List<UInt32> { CreateDateData(2) };
             StartAt = DateTime.Now;
+            backgroundWorker1.RunWorkerAsync();
+        }
+
+        private void buttonTransmitDateTime_Click(object sender, EventArgs e)
+        {
+            buttonTransmitTimestamp.Enabled = false;
+            buttonTransmitDate.Enabled = false;
+            buttonTransmitDateTime.Enabled = false;
+            buttonTransmitValue.Enabled = false;
+            Data = CreateDateTimeData(out StartAt, checkBox1.Checked);
             backgroundWorker1.RunWorkerAsync();
         }
 
         private void backgroundWorker1_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
             buttonTransmitTimestamp.Enabled = true;
+            buttonTransmitDate.Enabled = true;
+            buttonTransmitDateTime.Enabled = true;
             buttonTransmitValue.Enabled = true;
         }
 
@@ -59,14 +77,18 @@ namespace Blinky
         {
             textBox1.Invoke(new MethodInvoker(delegate ()
             {
-                textBox1.Text = "0x" + Data.ToString("X");
+                textBox1.Text = string.Join(" / ", Data.Select(data => "0x" + data.ToString("X")));
             }));
             
             double ticksPerMicrosecond = (double)Stopwatch.Frequency / 1_000_000;
             double microseconds = 1000.0 * 1000.0 / (float)Frequency;
             long intervalTicks = (long)(microseconds * ticksPerMicrosecond);
 
-            HighResTransmission(Data, intervalTicks, StartAt);
+            foreach (UInt32 data in Data)
+            {
+                HighResTransmission(data, intervalTicks, StartAt);
+                StartAt = DateTime.Now;
+            }
         }
         
         /// <summary>
@@ -131,7 +153,7 @@ namespace Blinky
         /// 3 Bit Unused
         /// 8 Bit Checksum
         /// </summary>
-        private UInt32 CreateTimeData(out DateTime startAt, bool exact)
+        private UInt32 CreateTimeData(out DateTime startAt, int header, int bitOffset = 33)
         {
             int secondDelay = 2;
             double ms = (1000 / Frequency);
@@ -142,10 +164,7 @@ namespace Blinky
             startAt = startAt.AddMilliseconds(-125);
 
             dt = startAt;
-            dt = dt.AddMilliseconds(33 * ms);//.AddMilliseconds(-ms);
-            //if (!exact)
-            //    dt = dt.AddMilliseconds(-1000);
-            int header = exact ? 3 : 1;
+            dt = dt.AddMilliseconds(bitOffset * ms);
             int sec = dt.Second;
             int min = dt.Minute;
             int hour = dt.Hour;
@@ -153,6 +172,13 @@ namespace Blinky
             UInt32 data = (UInt32)((header << 28) + (sec << 22) + (min << 16) + (hour << 11));
             data += CalculateChecksum(data);
             return data;
+        }
+
+        private List<UInt32> CreateDateTimeData(out DateTime startAt, bool exact)
+        {
+            UInt32 timeData = CreateTimeData(out startAt, exact ? 6 : 5, 66);
+            UInt32 dateData = CreateDateData(4);
+            return new List<UInt32> { dateData, timeData };
         }
 
         /// <summary>
@@ -164,10 +190,9 @@ namespace Blinky
         /// 5 Bit Unused
         /// 8 Bit Checksum
         /// </summary>
-        private UInt32 CreateDateData()
+        private UInt32 CreateDateData(int header)
         {
             DateTime dt = DateTime.Now;
-            int header = 2;
             int day = dt.Day;
             int month = dt.Month;
             int year = dt.Year - 2020;
