@@ -13,7 +13,7 @@ namespace Blinky
 {
     public partial class Form1 : Form
     {
-        int Frequency = 8;
+        int Frequency = 16;
         List<UInt32> Data;
         DateTime StartAt;
 
@@ -155,13 +155,10 @@ namespace Blinky
         /// </summary>
         private UInt32 CreateTimeData(out DateTime startAt, int header, int bitOffset = 33)
         {
-            int secondDelay = 2;
             double ms = (1000 / Frequency);
             DateTime dt = DateTime.Now;
             
-            startAt = dt.AddSeconds(secondDelay);
-            startAt = startAt.AddMilliseconds(1000 - dt.Millisecond);
-            startAt = startAt.AddMilliseconds(-125);
+            startAt = dt.AddMilliseconds(2000 - dt.Millisecond);
 
             dt = startAt;
             dt = dt.AddMilliseconds(bitOffset * ms);
