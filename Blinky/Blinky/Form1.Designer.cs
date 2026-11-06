@@ -36,7 +36,6 @@
             this.buttonTransmitDate = new System.Windows.Forms.Button();
             this.buttonTransmitDateTime = new System.Windows.Forms.Button();
             this.textBox1 = new System.Windows.Forms.TextBox();
-            this.checkBox1 = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
             // 
@@ -116,25 +115,12 @@
             this.textBox1.ReadOnly = true;
             this.textBox1.Size = new System.Drawing.Size(131, 20);
             this.textBox1.TabIndex = 6;
-            // 
-            // checkBox1
-            // 
-            this.checkBox1.AutoSize = true;
-            this.checkBox1.ForeColor = System.Drawing.SystemColors.ButtonFace;
-            this.checkBox1.Location = new System.Drawing.Point(176, 17);
-            this.checkBox1.Name = "checkBox1";
-            this.checkBox1.Size = new System.Drawing.Size(53, 17);
-            this.checkBox1.TabIndex = 7;
-            this.checkBox1.Text = "Exact";
-            this.checkBox1.UseVisualStyleBackColor = true;
-            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.ActiveCaptionText;
             this.ClientSize = new System.Drawing.Size(388, 427);
-            this.Controls.Add(this.checkBox1);
             this.Controls.Add(this.textBox1);
             this.Controls.Add(this.buttonTransmitDateTime);
             this.Controls.Add(this.buttonTransmitDate);
@@ -160,6 +146,5 @@
         private System.Windows.Forms.Button buttonTransmitDate;
         private System.Windows.Forms.Button buttonTransmitDateTime;
         private System.Windows.Forms.TextBox textBox1;
-        private System.Windows.Forms.CheckBox checkBox1;
     }
 }

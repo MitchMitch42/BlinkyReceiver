@@ -40,7 +40,7 @@ namespace Blinky
             buttonTransmitDate.Enabled = false;
             buttonTransmitDateTime.Enabled = false;
             buttonTransmitValue.Enabled = false;
-            Data = new List<UInt32> { CreateTimeData(out StartAt, checkBox1.Checked ? 3 : 1) };
+            Data = new List<UInt32> { CreateTimeData(out StartAt, 1) };
             backgroundWorker1.RunWorkerAsync();
         }
 
@@ -61,7 +61,7 @@ namespace Blinky
             buttonTransmitDate.Enabled = false;
             buttonTransmitDateTime.Enabled = false;
             buttonTransmitValue.Enabled = false;
-            Data = CreateDateTimeData(out StartAt, checkBox1.Checked);
+            Data = CreateDateTimeData(out StartAt);
             backgroundWorker1.RunWorkerAsync();
         }
 
@@ -158,7 +158,7 @@ namespace Blinky
             double ms = (1000 / Frequency);
             DateTime dt = DateTime.Now;
             
-            startAt = dt.AddMilliseconds(2000 - dt.Millisecond);
+            startAt = dt.AddMilliseconds(1000 - dt.Millisecond);
 
             dt = startAt;
             dt = dt.AddMilliseconds(bitOffset * ms);
@@ -171,9 +171,9 @@ namespace Blinky
             return data;
         }
 
-        private List<UInt32> CreateDateTimeData(out DateTime startAt, bool exact)
+        private List<UInt32> CreateDateTimeData(out DateTime startAt)
         {
-            UInt32 timeData = CreateTimeData(out startAt, exact ? 6 : 5, 66);
+            UInt32 timeData = CreateTimeData(out startAt, 5, 66);
             UInt32 dateData = CreateDateData(4);
             return new List<UInt32> { dateData, timeData };
         }
