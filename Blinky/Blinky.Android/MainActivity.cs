@@ -153,7 +153,7 @@ public sealed class MainActivity : Activity
             var data = TransmissionProtocol.CreateHeartbeatData();
             await StartTransmissionAsync(new[] { data }, DateTime.Now, frequency);
         });
-        var dateTimeButton = MakeButton("Date/time", async () =>
+        var dateTimeButton = MakeButton("Date/time MP", async () =>
         {
             if (!TryGetFrequency(out var frequency))
                 return;
@@ -339,8 +339,8 @@ internal static class TransmissionProtocol
 
     public static uint[] CreateDateTimeData(out DateTime startAt, DateTime now, int frequency)
     {
-        var timeData = CreateTimeData(out startAt, 5, now, frequency, 66);
-        var dateData = CreateDateData(now, 4);
+        var timeData = CreateTimeData(out startAt, 1, now, frequency, 66);
+        var dateData = CreateDateData(now, 2, multipacket: true);
         return new[] { dateData, timeData };
     }
 
@@ -361,12 +361,14 @@ internal static class TransmissionProtocol
         return AddChecksum(data);
     }
 
-    public static uint CreateDateData(DateTime now, int header)
+    public static uint CreateDateData(DateTime now, int header, bool multipacket = false)
     {
         var data = ((uint)header << 28)
             | ((uint)now.Day << 23)
             | ((uint)now.Month << 19)
             | ((uint)(now.Year - 2020) << 13);
+        if (multipacket)
+            data |= 0x80000000;
         return AddChecksum(data);
     }
 

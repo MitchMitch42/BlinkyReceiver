@@ -37,13 +37,14 @@
             this.buttonTransmitDateTime = new System.Windows.Forms.Button();
             this.buttonTransmitHeartbeat = new System.Windows.Forms.Button();
             this.textBox1 = new System.Windows.Forms.TextBox();
+            this.buttonTest = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
             // 
             // pictureBox1
             // 
             this.pictureBox1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.pictureBox1.Location = new System.Drawing.Point(13, 126);
+            this.pictureBox1.Location = new System.Drawing.Point(12, 246);
             this.pictureBox1.Name = "pictureBox1";
             this.pictureBox1.Size = new System.Drawing.Size(363, 264);
             this.pictureBox1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
@@ -97,42 +98,55 @@
             this.buttonTransmitDate.UseVisualStyleBackColor = false;
             this.buttonTransmitDate.Click += new System.EventHandler(this.buttonTransmitDate_Click);
             // 
+            // buttonTransmitDateTime
+            // 
+            this.buttonTransmitDateTime.BackColor = System.Drawing.SystemColors.ControlDarkDark;
+            this.buttonTransmitDateTime.Location = new System.Drawing.Point(13, 99);
+            this.buttonTransmitDateTime.Name = "buttonTransmitDateTime";
+            this.buttonTransmitDateTime.Size = new System.Drawing.Size(155, 23);
+            this.buttonTransmitDateTime.TabIndex = 8;
+            this.buttonTransmitDateTime.Text = "Date/time MP";
+            this.buttonTransmitDateTime.UseVisualStyleBackColor = false;
+            this.buttonTransmitDateTime.Click += new System.EventHandler(this.buttonTransmitDateTime_Click);
+            // 
             // buttonTransmitHeartbeat
             // 
             this.buttonTransmitHeartbeat.BackColor = System.Drawing.SystemColors.ControlDarkDark;
-            this.buttonTransmitHeartbeat.Location = new System.Drawing.Point(174, 12);
+            this.buttonTransmitHeartbeat.Location = new System.Drawing.Point(13, 128);
             this.buttonTransmitHeartbeat.Name = "buttonTransmitHeartbeat";
-            this.buttonTransmitHeartbeat.Size = new System.Drawing.Size(101, 23);
+            this.buttonTransmitHeartbeat.Size = new System.Drawing.Size(155, 23);
             this.buttonTransmitHeartbeat.TabIndex = 7;
             this.buttonTransmitHeartbeat.Text = "Heartbeat";
             this.buttonTransmitHeartbeat.UseVisualStyleBackColor = false;
             this.buttonTransmitHeartbeat.Click += new System.EventHandler(this.buttonTransmitHeartbeat_Click);
             // 
-            // buttonTransmitDateTime
-            // 
-            this.buttonTransmitDateTime.BackColor = System.Drawing.SystemColors.ControlDarkDark;
-            this.buttonTransmitDateTime.Location = new System.Drawing.Point(174, 41);
-            this.buttonTransmitDateTime.Name = "buttonTransmitDateTime";
-            this.buttonTransmitDateTime.Size = new System.Drawing.Size(101, 23);
-            this.buttonTransmitDateTime.TabIndex = 8;
-            this.buttonTransmitDateTime.Text = "Date/time";
-            this.buttonTransmitDateTime.UseVisualStyleBackColor = false;
-            this.buttonTransmitDateTime.Click += new System.EventHandler(this.buttonTransmitDateTime_Click);
-            // 
             // textBox1
             // 
             this.textBox1.BackColor = System.Drawing.SystemColors.ControlDarkDark;
-            this.textBox1.Location = new System.Drawing.Point(13, 396);
+            this.textBox1.Location = new System.Drawing.Point(12, 516);
             this.textBox1.Name = "textBox1";
             this.textBox1.ReadOnly = true;
             this.textBox1.Size = new System.Drawing.Size(131, 20);
             this.textBox1.TabIndex = 6;
+            // 
+            // buttonTest
+            // 
+            this.buttonTest.BackColor = System.Drawing.SystemColors.ControlDarkDark;
+            this.buttonTest.Location = new System.Drawing.Point(288, 217);
+            this.buttonTest.Name = "buttonTest";
+            this.buttonTest.Size = new System.Drawing.Size(87, 23);
+            this.buttonTest.TabIndex = 9;
+            this.buttonTest.Text = "Test";
+            this.buttonTest.UseVisualStyleBackColor = false;
+            this.buttonTest.Click += new System.EventHandler(this.buttonTest_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.ActiveCaptionText;
-            this.ClientSize = new System.Drawing.Size(388, 427);
+            this.ClientSize = new System.Drawing.Size(388, 545);
+            this.Controls.Add(this.buttonTest);
             this.Controls.Add(this.textBox1);
             this.Controls.Add(this.buttonTransmitDateTime);
             this.Controls.Add(this.buttonTransmitHeartbeat);
@@ -160,5 +174,6 @@
         private System.Windows.Forms.Button buttonTransmitDateTime;
         private System.Windows.Forms.Button buttonTransmitHeartbeat;
         private System.Windows.Forms.TextBox textBox1;
+        private System.Windows.Forms.Button buttonTest;
     }
 }

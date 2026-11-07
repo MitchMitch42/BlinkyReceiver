@@ -13,7 +13,7 @@ namespace Blinky
 {
     public partial class Form1 : Form
     {
-        int Frequency = 16;
+        double Frequency = 128.0 / 6.0;
         List<UInt32> Data;
         DateTime StartAt;
 
@@ -65,8 +65,7 @@ namespace Blinky
             buttonTransmitHeartbeat.Enabled = false;
             buttonTransmitDateTime.Enabled = false;
             buttonTransmitValue.Enabled = false;
-            Data = new List<UInt32> { CreateHeartbeatData() };
-            StartAt = DateTime.Now;
+            Data = new List<UInt32> { CreateHeartbeatData(out StartAt) };
             backgroundWorker1.RunWorkerAsync();
         }
 
@@ -98,7 +97,7 @@ namespace Blinky
             }));
             
             double ticksPerMicrosecond = (double)Stopwatch.Frequency / 1_000_000;
-            double microseconds = 1000.0 * 1000.0 / (float)Frequency;
+            double microseconds = 1000.0 * 1000.0 / Frequency;
             long intervalTicks = (long)(microseconds * ticksPerMicrosecond);
 
             foreach (UInt32 data in Data)
@@ -118,6 +117,7 @@ namespace Blinky
 
             }
 
+
             long nextTick = Stopwatch.GetTimestamp();
 
             for (int i = -1; i < 33; i++)
@@ -135,6 +135,7 @@ namespace Blinky
                 }
                 else if(i == 32)
                 {
+                    DateTime dt = DateTime.Now;
                     //back to black at end of transmission
                     Show(Color.Black);
                 }
@@ -163,14 +164,14 @@ namespace Blinky
 
         /// <summary>
         /// Create 32 bit containing timestamp
-        /// 4 Bit Header (0x1)
+        /// Packet type 0x1; bit 31 indicates another packet follows
         /// 6 Bit Seconds
         /// 6 Bit Minutes
         /// 5 Bit Hours
         /// 3 Bit Unused
         /// 8 Bit Checksum
         /// </summary>
-        private UInt32 CreateTimeData(out DateTime startAt, int header, int bitOffset = 33)
+        private UInt32 CreateTimeData(out DateTime startAt, int header, bool multipacket = false, int bitOffset = 33)
         {
             double ms = (1000.0 / Frequency);
             DateTime dt = DateTime.Now;
@@ -187,27 +188,50 @@ namespace Blinky
             int hour = dt.Hour;
 
             UInt32 data = (UInt32)((header << 28) + (sec << 22) + (min << 16) + (hour << 11));
+            if (multipacket)
+                data |= 0x80000000;
             data += CalculateChecksum(data);
             return data;
         }
 
         private List<UInt32> CreateDateTimeData(out DateTime startAt)
         {
-            UInt32 timeData = CreateTimeData(out startAt, 5, 66);
-            UInt32 dateData = CreateDateData(4);
+            //return CreateDebugData(out startAt);
+            UInt32 dateData = CreateDateData(2, true);
+            UInt32 timeData = CreateTimeData(out startAt, 1, false, 33);
             return new List<UInt32> { dateData, timeData };
+        }
+
+        private UInt32 CreateHeartbeatData(out DateTime startAt, int bitOffset = 33)
+        {
+            double ms = (1000.0 / Frequency);
+            DateTime dt = DateTime.Now;
+            double offsetMs = (dt.Millisecond + bitOffset * ms) % 1000;
+            startAt = dt.AddMilliseconds(2000 - offsetMs);
+
+            UInt32 data = 3u << 28;
+            data += CalculateChecksum(data);
+            return data;
+        }
+
+        private List<UInt32> CreateDebugData(out DateTime startAt)
+        {
+            startAt = DateTime.Now;
+            UInt32 d1 = CreateDateData(2, true);
+            UInt32 d2 = CreateDateData(2, false);
+            return new List<UInt32> { d1, d2 };
         }
 
         /// <summary>
         /// Create 32 bit containing current date
-        /// 4 Bit Header (0x2)
+        /// Packet type 0x2; bit 31 indicates another packet follows
         /// 5 Bit Day
         /// 4 Bit Month
         /// 6 Bit Year (current year - 2020)
         /// 5 Bit Unused
         /// 8 Bit Checksum
         /// </summary>
-        private UInt32 CreateDateData(int header)
+        private UInt32 CreateDateData(int header, bool multipacket = false)
         {
             DateTime dt = DateTime.Now;
             int day = dt.Day;
@@ -215,13 +239,8 @@ namespace Blinky
             int year = dt.Year - 2020;
 
             UInt32 data = (UInt32)((header << 28) + (day << 23) + (month << 19) + (year << 13));
-            data += CalculateChecksum(data);
-            return data;
-        }
-
-        private UInt32 CreateHeartbeatData()
-        {
-            UInt32 data = 3u << 28;
+            if (multipacket)
+                data |= 0x80000000;
             data += CalculateChecksum(data);
             return data;
         }
@@ -233,6 +252,11 @@ namespace Blinky
         {
             UInt32 checksum = (data >> 24 & 0xFF) + (data >> 16 & 0xFF) + (data >> 8 & 0xFF);
             return (byte)(checksum & 0xFF);
+        }
+
+        private void buttonTest_Click(object sender, EventArgs e)
+        {
+            pictureBox1.BackColor = Color.White;
         }
     }
 }
