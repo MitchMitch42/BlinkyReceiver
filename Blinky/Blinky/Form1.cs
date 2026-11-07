@@ -155,10 +155,13 @@ namespace Blinky
         /// </summary>
         private UInt32 CreateTimeData(out DateTime startAt, int header, int bitOffset = 33)
         {
-            double ms = (1000 / Frequency);
+            double ms = (1000.0 / Frequency);
             DateTime dt = DateTime.Now;
             
             startAt = dt.AddMilliseconds(1000 - dt.Millisecond);
+            //startAt = dt.AddMilliseconds(2000 - dt.Millisecond - ((bitoffset * 1000.0 / Frequency) % 1000));
+            //startAt = startAt.AddMilliseconds(1000 - startAt.Millisecond);
+
 
             dt = startAt;
             dt = dt.AddMilliseconds(bitOffset * ms);
