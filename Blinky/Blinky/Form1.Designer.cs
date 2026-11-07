@@ -41,6 +41,9 @@
             this.textBoxLatitude = new System.Windows.Forms.TextBox();
             this.labelLongitude = new System.Windows.Forms.Label();
             this.textBoxLongitude = new System.Windows.Forms.TextBox();
+            this.comboBoxTimeZone = new System.Windows.Forms.ComboBox();
+            this.buttonTransmitTimeZone = new System.Windows.Forms.Button();
+            this.labelTimeZone = new System.Windows.Forms.Label();
             this.textBox1 = new System.Windows.Forms.TextBox();
             this.buttonTest = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
@@ -174,6 +177,38 @@
             this.textBoxLongitude.Size = new System.Drawing.Size(143, 20);
             this.textBoxLongitude.TabIndex = 14;
             // 
+            // comboBoxTimeZone
+            // 
+            this.comboBoxTimeZone.BackColor = System.Drawing.SystemColors.ControlDarkDark;
+            this.comboBoxTimeZone.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.comboBoxTimeZone.ForeColor = System.Drawing.SystemColors.ControlLightLight;
+            this.comboBoxTimeZone.FormattingEnabled = true;
+            this.comboBoxTimeZone.Location = new System.Drawing.Point(174, 157);
+            this.comboBoxTimeZone.Name = "comboBoxTimeZone";
+            this.comboBoxTimeZone.Size = new System.Drawing.Size(143, 21);
+            this.comboBoxTimeZone.TabIndex = 15;
+            // 
+            // buttonTransmitTimeZone
+            // 
+            this.buttonTransmitTimeZone.BackColor = System.Drawing.SystemColors.ControlDarkDark;
+            this.buttonTransmitTimeZone.Location = new System.Drawing.Point(13, 186);
+            this.buttonTransmitTimeZone.Name = "buttonTransmitTimeZone";
+            this.buttonTransmitTimeZone.Size = new System.Drawing.Size(155, 23);
+            this.buttonTransmitTimeZone.TabIndex = 16;
+            this.buttonTransmitTimeZone.Text = "Set time zone";
+            this.buttonTransmitTimeZone.UseVisualStyleBackColor = false;
+            this.buttonTransmitTimeZone.Click += new System.EventHandler(this.buttonTransmitTimeZone_Click);
+            // 
+            // labelTimeZone
+            // 
+            this.labelTimeZone.AutoSize = true;
+            this.labelTimeZone.ForeColor = System.Drawing.SystemColors.ControlLightLight;
+            this.labelTimeZone.Location = new System.Drawing.Point(174, 191);
+            this.labelTimeZone.Name = "labelTimeZone";
+            this.labelTimeZone.Size = new System.Drawing.Size(57, 13);
+            this.labelTimeZone.TabIndex = 17;
+            this.labelTimeZone.Text = "Time zone";
+            // 
             // textBox1
             // 
             this.textBox1.BackColor = System.Drawing.SystemColors.ControlDarkDark;
@@ -205,6 +240,9 @@
             this.Controls.Add(this.labelLongitude);
             this.Controls.Add(this.textBoxLatitude);
             this.Controls.Add(this.labelLatitude);
+            this.Controls.Add(this.buttonTransmitTimeZone);
+            this.Controls.Add(this.labelTimeZone);
+            this.Controls.Add(this.comboBoxTimeZone);
             this.Controls.Add(this.buttonTransmitLocation);
             this.Controls.Add(this.textBox1);
             this.Controls.Add(this.buttonTransmitDateTime);
@@ -237,6 +275,9 @@
         private System.Windows.Forms.TextBox textBoxLatitude;
         private System.Windows.Forms.Label labelLongitude;
         private System.Windows.Forms.TextBox textBoxLongitude;
+        private System.Windows.Forms.ComboBox comboBoxTimeZone;
+        private System.Windows.Forms.Button buttonTransmitTimeZone;
+        private System.Windows.Forms.Label labelTimeZone;
         private System.Windows.Forms.TextBox textBox1;
         private System.Windows.Forms.Button buttonTest;
     }

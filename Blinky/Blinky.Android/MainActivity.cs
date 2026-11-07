@@ -29,6 +29,7 @@ public sealed class MainActivity : Activity
     private EditText? _frequencyInput;
     private EditText? _latitudeInput;
     private EditText? _longitudeInput;
+    private Spinner? _timeZoneSpinner;
     private TextView? _dataLabel;
     private Button[] _transmitButtons = Array.Empty<Button>();
     private CancellationTokenSource? _transmissionCancellation;
@@ -127,6 +128,20 @@ public sealed class MainActivity : Activity
         _latitudeInput = MakeCoordinateInput("Latitude (-90 to 90)");
         _longitudeInput = MakeCoordinateInput("Longitude (-180 to 180)");
 
+        var timeZoneLabel = new TextView(this) { Text = "Time zone" };
+        timeZoneLabel.SetTextColor(Color.White);
+        _home.AddView(timeZoneLabel, MatchWrap(Dp(8)));
+
+        _timeZoneSpinner = new Spinner(this);
+        var timeZoneAdapter = new ArrayAdapter<string>(
+            this,
+            global::Android.Resource.Layout.SimpleSpinnerItem,
+            new System.Collections.Generic.List<string>(TransmissionProtocol.TimeZoneNames));
+        timeZoneAdapter.SetDropDownViewResource(global::Android.Resource.Layout.SimpleSpinnerDropDownItem);
+        _timeZoneSpinner.Adapter = timeZoneAdapter;
+        _timeZoneSpinner.SetSelection(15);
+        _home.AddView(_timeZoneSpinner, MatchWrap());
+
         _dataLabel = new TextView(this)
         {
             Text = "Ready to transmit",
@@ -174,6 +189,15 @@ public sealed class MainActivity : Activity
             };
             await StartTransmissionAsync(data, DateTime.Now, frequency);
         });
+        var timeZoneButton = MakeButton("Set time zone", async () =>
+        {
+            if (!TryGetFrequency(out var frequency))
+                return;
+
+            var data = TransmissionProtocol.CreateTimeZoneData(
+                (byte)_timeZoneSpinner!.SelectedItemPosition);
+            await StartTransmissionAsync(new[] { data }, DateTime.Now, frequency);
+        });
         var dateTimeButton = MakeButton("Date/time MP", async () =>
         {
             if (!TryGetFrequency(out var frequency))
@@ -200,11 +224,12 @@ public sealed class MainActivity : Activity
             await StartTransmissionAsync(new[] { data }, DateTime.Now, frequency);
         });
 
-        _transmitButtons = new[] { timestampButton, dateButton, heartbeatButton, locationButton, dateTimeButton, valueButton };
+        _transmitButtons = new[] { timestampButton, dateButton, heartbeatButton, locationButton, timeZoneButton, dateTimeButton, valueButton };
         _home.AddView(timestampButton, MatchWrap(Dp(8)));
         _home.AddView(dateButton, MatchWrap(Dp(8)));
         _home.AddView(heartbeatButton, MatchWrap(Dp(8)));
         _home.AddView(locationButton, MatchWrap(Dp(8)));
+        _home.AddView(timeZoneButton, MatchWrap(Dp(8)));
         _home.AddView(dateTimeButton, MatchWrap(Dp(8)));
         _home.AddView(valueButton, MatchWrap(Dp(8)));
         _homeScroll = new ScrollView(this);
@@ -411,6 +436,18 @@ public sealed class MainActivity : Activity
 
 internal static class TransmissionProtocol
 {
+    public static readonly string[] TimeZoneNames =
+    {
+        "Pago Pago", "Honolulu", "Anchorage", "Los Angeles", "Denver", "Phoenix",
+        "Chicago", "Regina", "New York", "Halifax", "Manaus", "Santiago",
+        "Sao Paulo", "St Johns", "Nuuk", "UTC", "London", "Lagos", "Berlin",
+        "Cairo", "Maputo", "Jerusalem", "Helsinki", "Nairobi", "Riyadh",
+        "Moscow", "Tehran", "Dubai", "Kolkata", "Kathmandu", "Yangon",
+        "Bangkok", "Shanghai", "Hong Kong", "Singapore", "Perth", "Tokyo",
+        "Seoul", "Darwin", "Adelaide", "Brisbane", "Hobart", "Sydney",
+        "Guam", "Tarawa", "Auckland"
+    };
+
     public static uint CreateTimeData(out DateTime startAt, int header, DateTime now, int frequency)
     {
         return CreateTimeData(out startAt, header, now, frequency, 33);
@@ -459,6 +496,12 @@ internal static class TransmissionProtocol
         var data = ((uint)header << 28) | ((uint)(ushort)value << 12);
         if (multipacket)
             data |= 0x80000000;
+        return AddChecksum(data);
+    }
+
+    public static uint CreateTimeZoneData(byte index)
+    {
+        var data = (6u << 28) | ((uint)index << 8);
         return AddChecksum(data);
     }
 

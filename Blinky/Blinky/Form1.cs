@@ -14,13 +14,27 @@ namespace Blinky
 {
     public partial class Form1 : Form
     {
+        private static readonly string[] TimeZoneNames =
+        {
+            "Pago Pago", "Honolulu", "Anchorage", "Los Angeles", "Denver", "Phoenix",
+            "Chicago", "Regina", "New York", "Halifax", "Manaus", "Santiago",
+            "Sao Paulo", "St Johns", "Nuuk", "UTC", "London", "Lagos", "Berlin",
+            "Cairo", "Maputo", "Jerusalem", "Helsinki", "Nairobi", "Riyadh",
+            "Moscow", "Tehran", "Dubai", "Kolkata", "Kathmandu", "Yangon",
+            "Bangkok", "Shanghai", "Hong Kong", "Singapore", "Perth", "Tokyo",
+            "Seoul", "Darwin", "Adelaide", "Brisbane", "Hobart", "Sydney",
+            "Guam", "Tarawa", "Auckland"
+        };
+
         double Frequency = 128.0 / 6.0;
         List<UInt32> Data;
         DateTime StartAt;
 
         public Form1()
         {
-            InitializeComponent();      
+            InitializeComponent();
+            comboBoxTimeZone.Items.AddRange(TimeZoneNames);
+            comboBoxTimeZone.SelectedIndex = 15;
             pictureBox1.BackColor = Color.Black;
         }
         
@@ -31,6 +45,7 @@ namespace Blinky
             buttonTransmitHeartbeat.Enabled = false;
             buttonTransmitDateTime.Enabled = false;
             buttonTransmitLocation.Enabled = false;
+            buttonTransmitTimeZone.Enabled = false;
             buttonTransmitValue.Enabled = false;
             Data = new List<UInt32> { UInt32.Parse(textBoxTxValue.Text.Replace("0x", ""), System.Globalization.NumberStyles.HexNumber) };
             StartAt = DateTime.Now;
@@ -44,6 +59,7 @@ namespace Blinky
             buttonTransmitHeartbeat.Enabled = false;
             buttonTransmitDateTime.Enabled = false;
             buttonTransmitLocation.Enabled = false;
+            buttonTransmitTimeZone.Enabled = false;
             buttonTransmitValue.Enabled = false;
             Data = new List<UInt32> { CreateTimeData(out StartAt, 1) };
             backgroundWorker1.RunWorkerAsync();
@@ -56,6 +72,7 @@ namespace Blinky
             buttonTransmitHeartbeat.Enabled = false;
             buttonTransmitDateTime.Enabled = false;
             buttonTransmitLocation.Enabled = false;
+            buttonTransmitTimeZone.Enabled = false;
             buttonTransmitValue.Enabled = false;
             Data = new List<UInt32> { CreateDateData(2) };
             StartAt = DateTime.Now;
@@ -69,6 +86,7 @@ namespace Blinky
             buttonTransmitHeartbeat.Enabled = false;
             buttonTransmitDateTime.Enabled = false;
             buttonTransmitLocation.Enabled = false;
+            buttonTransmitTimeZone.Enabled = false;
             buttonTransmitValue.Enabled = false;
             Data = new List<UInt32> { CreateHeartbeatData(out StartAt) };
             backgroundWorker1.RunWorkerAsync();
@@ -81,6 +99,7 @@ namespace Blinky
             buttonTransmitHeartbeat.Enabled = false;
             buttonTransmitDateTime.Enabled = false;
             buttonTransmitLocation.Enabled = false;
+            buttonTransmitTimeZone.Enabled = false;
             buttonTransmitValue.Enabled = false;
             Data = CreateDateTimeData(out StartAt);
             backgroundWorker1.RunWorkerAsync();
@@ -109,11 +128,39 @@ namespace Blinky
             buttonTransmitHeartbeat.Enabled = false;
             buttonTransmitDateTime.Enabled = false;
             buttonTransmitLocation.Enabled = false;
+            buttonTransmitTimeZone.Enabled = false;
             buttonTransmitValue.Enabled = false;
             Data = new List<UInt32>
             {
                 CreateLocationData(latitudeValue, 4, true),
                 CreateLocationData(longitudeValue, 5, false)
+            };
+            StartAt = DateTime.Now;
+            backgroundWorker1.RunWorkerAsync();
+        }
+
+        private void buttonTransmitTimeZone_Click(object sender, EventArgs e)
+        {
+            if (comboBoxTimeZone.SelectedIndex < 0)
+            {
+                MessageBox.Show(
+                    "Select a time zone to transmit.",
+                    "Invalid time zone",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+                return;
+            }
+
+            buttonTransmitTimestamp.Enabled = false;
+            buttonTransmitDate.Enabled = false;
+            buttonTransmitHeartbeat.Enabled = false;
+            buttonTransmitDateTime.Enabled = false;
+            buttonTransmitLocation.Enabled = false;
+            buttonTransmitTimeZone.Enabled = false;
+            buttonTransmitValue.Enabled = false;
+            Data = new List<UInt32>
+            {
+                CreateTimeZoneData((byte)comboBoxTimeZone.SelectedIndex)
             };
             StartAt = DateTime.Now;
             backgroundWorker1.RunWorkerAsync();
@@ -133,6 +180,7 @@ namespace Blinky
             buttonTransmitHeartbeat.Enabled = true;
             buttonTransmitDateTime.Enabled = true;
             buttonTransmitLocation.Enabled = true;
+            buttonTransmitTimeZone.Enabled = true;
             buttonTransmitValue.Enabled = true;
         }
 
@@ -266,6 +314,13 @@ namespace Blinky
             UInt32 data = ((UInt32)header << 28) | ((UInt32)(ushort)value << 12);
             if (multipacket)
                 data |= 0x80000000;
+            data += CalculateChecksum(data);
+            return data;
+        }
+
+        private UInt32 CreateTimeZoneData(byte index)
+        {
+            UInt32 data = (6u << 28) | ((UInt32)index << 8);
             data += CalculateChecksum(data);
             return data;
         }
