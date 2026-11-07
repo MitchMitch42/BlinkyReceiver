@@ -23,9 +23,12 @@ public sealed class MainActivity : Activity
     private const int DefaultFrequency = 16;
 
     private LinearLayout? _home;
+    private ScrollView? _homeScroll;
     private View? _flashView;
     private EditText? _valueInput;
     private EditText? _frequencyInput;
+    private EditText? _latitudeInput;
+    private EditText? _longitudeInput;
     private TextView? _dataLabel;
     private Button[] _transmitButtons = Array.Empty<Button>();
     private CancellationTokenSource? _transmissionCancellation;
@@ -121,6 +124,9 @@ public sealed class MainActivity : Activity
         _valueInput.SetSelectAllOnFocus(true);
         _home.AddView(_valueInput, MatchWrap(Dp(12)));
 
+        _latitudeInput = MakeCoordinateInput("Latitude (-90 to 90)");
+        _longitudeInput = MakeCoordinateInput("Longitude (-180 to 180)");
+
         _dataLabel = new TextView(this)
         {
             Text = "Ready to transmit",
@@ -153,6 +159,21 @@ public sealed class MainActivity : Activity
             var data = TransmissionProtocol.CreateHeartbeatData();
             await StartTransmissionAsync(new[] { data }, DateTime.Now, frequency);
         });
+        var locationButton = MakeButton("Transmit location", async () =>
+        {
+            if (!TryGetFrequency(out var frequency)
+                || !TryGetLocation(out var latitude, out var longitude))
+            {
+                return;
+            }
+
+            var data = new[]
+            {
+                TransmissionProtocol.CreateLocationData(latitude, 4, multipacket: true),
+                TransmissionProtocol.CreateLocationData(longitude, 5, multipacket: false)
+            };
+            await StartTransmissionAsync(data, DateTime.Now, frequency);
+        });
         var dateTimeButton = MakeButton("Date/time MP", async () =>
         {
             if (!TryGetFrequency(out var frequency))
@@ -179,13 +200,71 @@ public sealed class MainActivity : Activity
             await StartTransmissionAsync(new[] { data }, DateTime.Now, frequency);
         });
 
-        _transmitButtons = new[] { timestampButton, dateButton, heartbeatButton, dateTimeButton, valueButton };
+        _transmitButtons = new[] { timestampButton, dateButton, heartbeatButton, locationButton, dateTimeButton, valueButton };
         _home.AddView(timestampButton, MatchWrap(Dp(8)));
         _home.AddView(dateButton, MatchWrap(Dp(8)));
         _home.AddView(heartbeatButton, MatchWrap(Dp(8)));
+        _home.AddView(locationButton, MatchWrap(Dp(8)));
         _home.AddView(dateTimeButton, MatchWrap(Dp(8)));
         _home.AddView(valueButton, MatchWrap(Dp(8)));
-        SetContentView(_home);
+        _homeScroll = new ScrollView(this);
+        _homeScroll.AddView(_home);
+        SetContentView(_homeScroll);
+    }
+
+    private EditText MakeCoordinateInput(string label)
+    {
+        var textLabel = new TextView(this) { Text = label };
+        textLabel.SetTextColor(Color.White);
+        _home!.AddView(textLabel, MatchWrap(Dp(8)));
+
+        var input = new EditText(this)
+        {
+            Hint = "Decimal degrees",
+            InputType = InputTypes.ClassNumber
+                | InputTypes.NumberFlagSigned
+                | InputTypes.NumberFlagDecimal
+        };
+        input.SetSingleLine(true);
+        input.SetTextColor(Color.White);
+        input.SetHintTextColor(Color.LightGray);
+        _home.AddView(input, MatchWrap());
+        return input;
+    }
+
+    private bool TryGetLocation(out short latitude, out short longitude)
+    {
+        if (TryParseCoordinate(_latitudeInput?.Text, -90m, 90m, out var latitudeDegrees)
+            && TryParseCoordinate(_longitudeInput?.Text, -180m, 180m, out var longitudeDegrees))
+        {
+            latitude = (short)decimal.Round(latitudeDegrees * 100m, 0, MidpointRounding.AwayFromZero);
+            longitude = (short)decimal.Round(longitudeDegrees * 100m, 0, MidpointRounding.AwayFromZero);
+            return true;
+        }
+
+        var alert = new AlertDialog.Builder(this);
+        alert.SetTitle("Invalid location");
+        alert.SetMessage("Enter latitude from -90 to 90 and longitude from -180 to 180.");
+        alert.SetPositiveButton("OK", (_, _) => { });
+        alert.Show();
+        latitude = 0;
+        longitude = 0;
+        return false;
+    }
+
+    private static bool TryParseCoordinate(
+        string? text,
+        decimal minimum,
+        decimal maximum,
+        out decimal coordinate)
+    {
+        return decimal.TryParse(
+                text,
+                NumberStyles.Number,
+                CultureInfo.CurrentCulture,
+                out coordinate)
+            && coordinate >= minimum
+            && coordinate <= maximum;
     }
 
     private bool TryGetFrequency(out int frequency)
@@ -200,11 +279,11 @@ public sealed class MainActivity : Activity
             return true;
         }
 
-        new AlertDialog.Builder(this)
-            .SetTitle("Invalid frequency")
-            .SetMessage("Enter a positive whole number of hertz.")
-            .SetPositiveButton("OK", (_, _) => { })
-            .Show();
+        var alert = new AlertDialog.Builder(this);
+        alert.SetTitle("Invalid frequency");
+        alert.SetMessage("Enter a positive whole number of hertz.");
+        alert.SetPositiveButton("OK", (_, _) => { });
+        alert.Show();
         return false;
     }
 
@@ -250,7 +329,7 @@ public sealed class MainActivity : Activity
             Window?.ClearFlags(WindowManagerFlags.KeepScreenOn);
             if (!IsFinishing && !IsDestroyed)
             {
-                SetContentView(_home);
+                SetContentView(_homeScroll);
                 foreach (var button in _transmitButtons)
                     button.Enabled = true;
                 _dataLabel!.Text = dataText;
@@ -374,6 +453,14 @@ internal static class TransmissionProtocol
 
     public static uint CreateHeartbeatData() =>
         AddChecksum(3u << 28);
+
+    public static uint CreateLocationData(short value, int header, bool multipacket)
+    {
+        var data = ((uint)header << 28) | ((uint)(ushort)value << 12);
+        if (multipacket)
+            data |= 0x80000000;
+        return AddChecksum(data);
+    }
 
     public static bool TryParseHexData(string? text, out uint data)
     {

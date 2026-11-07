@@ -36,6 +36,11 @@
             this.buttonTransmitDate = new System.Windows.Forms.Button();
             this.buttonTransmitDateTime = new System.Windows.Forms.Button();
             this.buttonTransmitHeartbeat = new System.Windows.Forms.Button();
+            this.buttonTransmitLocation = new System.Windows.Forms.Button();
+            this.labelLatitude = new System.Windows.Forms.Label();
+            this.textBoxLatitude = new System.Windows.Forms.TextBox();
+            this.labelLongitude = new System.Windows.Forms.Label();
+            this.textBoxLongitude = new System.Windows.Forms.TextBox();
             this.textBox1 = new System.Windows.Forms.TextBox();
             this.buttonTest = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
@@ -120,6 +125,55 @@
             this.buttonTransmitHeartbeat.UseVisualStyleBackColor = false;
             this.buttonTransmitHeartbeat.Click += new System.EventHandler(this.buttonTransmitHeartbeat_Click);
             // 
+            // buttonTransmitLocation
+            // 
+            this.buttonTransmitLocation.BackColor = System.Drawing.SystemColors.ControlDarkDark;
+            this.buttonTransmitLocation.Location = new System.Drawing.Point(13, 157);
+            this.buttonTransmitLocation.Name = "buttonTransmitLocation";
+            this.buttonTransmitLocation.Size = new System.Drawing.Size(155, 23);
+            this.buttonTransmitLocation.TabIndex = 10;
+            this.buttonTransmitLocation.Text = "Transmit location";
+            this.buttonTransmitLocation.UseVisualStyleBackColor = false;
+            this.buttonTransmitLocation.Click += new System.EventHandler(this.buttonTransmitLocation_Click);
+            // 
+            // labelLatitude
+            // 
+            this.labelLatitude.AutoSize = true;
+            this.labelLatitude.ForeColor = System.Drawing.SystemColors.ControlLightLight;
+            this.labelLatitude.Location = new System.Drawing.Point(174, 102);
+            this.labelLatitude.Name = "labelLatitude";
+            this.labelLatitude.Size = new System.Drawing.Size(45, 13);
+            this.labelLatitude.TabIndex = 11;
+            this.labelLatitude.Text = "Latitude";
+            // 
+            // textBoxLatitude
+            // 
+            this.textBoxLatitude.BackColor = System.Drawing.SystemColors.ControlDarkDark;
+            this.textBoxLatitude.ForeColor = System.Drawing.SystemColors.ControlLightLight;
+            this.textBoxLatitude.Location = new System.Drawing.Point(232, 99);
+            this.textBoxLatitude.Name = "textBoxLatitude";
+            this.textBoxLatitude.Size = new System.Drawing.Size(143, 20);
+            this.textBoxLatitude.TabIndex = 12;
+            // 
+            // labelLongitude
+            // 
+            this.labelLongitude.AutoSize = true;
+            this.labelLongitude.ForeColor = System.Drawing.SystemColors.ControlLightLight;
+            this.labelLongitude.Location = new System.Drawing.Point(174, 131);
+            this.labelLongitude.Name = "labelLongitude";
+            this.labelLongitude.Size = new System.Drawing.Size(54, 13);
+            this.labelLongitude.TabIndex = 13;
+            this.labelLongitude.Text = "Longitude";
+            // 
+            // textBoxLongitude
+            // 
+            this.textBoxLongitude.BackColor = System.Drawing.SystemColors.ControlDarkDark;
+            this.textBoxLongitude.ForeColor = System.Drawing.SystemColors.ControlLightLight;
+            this.textBoxLongitude.Location = new System.Drawing.Point(232, 128);
+            this.textBoxLongitude.Name = "textBoxLongitude";
+            this.textBoxLongitude.Size = new System.Drawing.Size(143, 20);
+            this.textBoxLongitude.TabIndex = 14;
+            // 
             // textBox1
             // 
             this.textBox1.BackColor = System.Drawing.SystemColors.ControlDarkDark;
@@ -147,6 +201,11 @@
             this.BackColor = System.Drawing.SystemColors.ActiveCaptionText;
             this.ClientSize = new System.Drawing.Size(388, 545);
             this.Controls.Add(this.buttonTest);
+            this.Controls.Add(this.textBoxLongitude);
+            this.Controls.Add(this.labelLongitude);
+            this.Controls.Add(this.textBoxLatitude);
+            this.Controls.Add(this.labelLatitude);
+            this.Controls.Add(this.buttonTransmitLocation);
             this.Controls.Add(this.textBox1);
             this.Controls.Add(this.buttonTransmitDateTime);
             this.Controls.Add(this.buttonTransmitHeartbeat);
@@ -173,6 +232,11 @@
         private System.Windows.Forms.Button buttonTransmitDate;
         private System.Windows.Forms.Button buttonTransmitDateTime;
         private System.Windows.Forms.Button buttonTransmitHeartbeat;
+        private System.Windows.Forms.Button buttonTransmitLocation;
+        private System.Windows.Forms.Label labelLatitude;
+        private System.Windows.Forms.TextBox textBoxLatitude;
+        private System.Windows.Forms.Label labelLongitude;
+        private System.Windows.Forms.TextBox textBoxLongitude;
         private System.Windows.Forms.TextBox textBox1;
         private System.Windows.Forms.Button buttonTest;
     }

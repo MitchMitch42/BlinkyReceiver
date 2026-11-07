@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Data;
 using System.Diagnostics;
 using System.Drawing;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -29,6 +30,7 @@ namespace Blinky
             buttonTransmitDate.Enabled = false;
             buttonTransmitHeartbeat.Enabled = false;
             buttonTransmitDateTime.Enabled = false;
+            buttonTransmitLocation.Enabled = false;
             buttonTransmitValue.Enabled = false;
             Data = new List<UInt32> { UInt32.Parse(textBoxTxValue.Text.Replace("0x", ""), System.Globalization.NumberStyles.HexNumber) };
             StartAt = DateTime.Now;
@@ -41,6 +43,7 @@ namespace Blinky
             buttonTransmitDate.Enabled = false;
             buttonTransmitHeartbeat.Enabled = false;
             buttonTransmitDateTime.Enabled = false;
+            buttonTransmitLocation.Enabled = false;
             buttonTransmitValue.Enabled = false;
             Data = new List<UInt32> { CreateTimeData(out StartAt, 1) };
             backgroundWorker1.RunWorkerAsync();
@@ -52,6 +55,7 @@ namespace Blinky
             buttonTransmitDate.Enabled = false;
             buttonTransmitHeartbeat.Enabled = false;
             buttonTransmitDateTime.Enabled = false;
+            buttonTransmitLocation.Enabled = false;
             buttonTransmitValue.Enabled = false;
             Data = new List<UInt32> { CreateDateData(2) };
             StartAt = DateTime.Now;
@@ -64,6 +68,7 @@ namespace Blinky
             buttonTransmitDate.Enabled = false;
             buttonTransmitHeartbeat.Enabled = false;
             buttonTransmitDateTime.Enabled = false;
+            buttonTransmitLocation.Enabled = false;
             buttonTransmitValue.Enabled = false;
             Data = new List<UInt32> { CreateHeartbeatData(out StartAt) };
             backgroundWorker1.RunWorkerAsync();
@@ -75,9 +80,50 @@ namespace Blinky
             buttonTransmitDate.Enabled = false;
             buttonTransmitHeartbeat.Enabled = false;
             buttonTransmitDateTime.Enabled = false;
+            buttonTransmitLocation.Enabled = false;
             buttonTransmitValue.Enabled = false;
             Data = CreateDateTimeData(out StartAt);
             backgroundWorker1.RunWorkerAsync();
+        }
+
+        private void buttonTransmitLocation_Click(object sender, EventArgs e)
+        {
+            decimal latitude;
+            decimal longitude;
+            if (!TryParseCoordinate(textBoxLatitude.Text, -90m, 90m, out latitude)
+                || !TryParseCoordinate(textBoxLongitude.Text, -180m, 180m, out longitude))
+            {
+                MessageBox.Show(
+                    "Enter a latitude from -90 to 90 and a longitude from -180 to 180.",
+                    "Invalid location",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+                return;
+            }
+
+            short latitudeValue = (short)decimal.Round(latitude * 100m, 0, MidpointRounding.AwayFromZero);
+            short longitudeValue = (short)decimal.Round(longitude * 100m, 0, MidpointRounding.AwayFromZero);
+
+            buttonTransmitTimestamp.Enabled = false;
+            buttonTransmitDate.Enabled = false;
+            buttonTransmitHeartbeat.Enabled = false;
+            buttonTransmitDateTime.Enabled = false;
+            buttonTransmitLocation.Enabled = false;
+            buttonTransmitValue.Enabled = false;
+            Data = new List<UInt32>
+            {
+                CreateLocationData(latitudeValue, 4, true),
+                CreateLocationData(longitudeValue, 5, false)
+            };
+            StartAt = DateTime.Now;
+            backgroundWorker1.RunWorkerAsync();
+        }
+
+        private bool TryParseCoordinate(string text, decimal minimum, decimal maximum, out decimal coordinate)
+        {
+            return decimal.TryParse(text, NumberStyles.Number, CultureInfo.CurrentCulture, out coordinate)
+                && coordinate >= minimum
+                && coordinate <= maximum;
         }
 
         private void backgroundWorker1_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
@@ -86,6 +132,7 @@ namespace Blinky
             buttonTransmitDate.Enabled = true;
             buttonTransmitHeartbeat.Enabled = true;
             buttonTransmitDateTime.Enabled = true;
+            buttonTransmitLocation.Enabled = true;
             buttonTransmitValue.Enabled = true;
         }
 
@@ -210,6 +257,15 @@ namespace Blinky
             startAt = dt.AddMilliseconds(2000 - offsetMs);
 
             UInt32 data = 3u << 28;
+            data += CalculateChecksum(data);
+            return data;
+        }
+
+        private UInt32 CreateLocationData(short value, int header, bool multipacket)
+        {
+            UInt32 data = ((UInt32)header << 28) | ((UInt32)(ushort)value << 12);
+            if (multipacket)
+                data |= 0x80000000;
             data += CalculateChecksum(data);
             return data;
         }
