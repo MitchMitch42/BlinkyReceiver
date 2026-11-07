@@ -35,6 +35,7 @@
             this.textBoxTxValue = new System.Windows.Forms.TextBox();
             this.buttonTransmitDate = new System.Windows.Forms.Button();
             this.buttonTransmitDateTime = new System.Windows.Forms.Button();
+            this.buttonTransmitHeartbeat = new System.Windows.Forms.Button();
             this.textBox1 = new System.Windows.Forms.TextBox();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
@@ -96,6 +97,17 @@
             this.buttonTransmitDate.UseVisualStyleBackColor = false;
             this.buttonTransmitDate.Click += new System.EventHandler(this.buttonTransmitDate_Click);
             // 
+            // buttonTransmitHeartbeat
+            // 
+            this.buttonTransmitHeartbeat.BackColor = System.Drawing.SystemColors.ControlDarkDark;
+            this.buttonTransmitHeartbeat.Location = new System.Drawing.Point(174, 12);
+            this.buttonTransmitHeartbeat.Name = "buttonTransmitHeartbeat";
+            this.buttonTransmitHeartbeat.Size = new System.Drawing.Size(101, 23);
+            this.buttonTransmitHeartbeat.TabIndex = 7;
+            this.buttonTransmitHeartbeat.Text = "Heartbeat";
+            this.buttonTransmitHeartbeat.UseVisualStyleBackColor = false;
+            this.buttonTransmitHeartbeat.Click += new System.EventHandler(this.buttonTransmitHeartbeat_Click);
+            // 
             // buttonTransmitDateTime
             // 
             this.buttonTransmitDateTime.BackColor = System.Drawing.SystemColors.ControlDarkDark;
@@ -123,6 +135,7 @@
             this.ClientSize = new System.Drawing.Size(388, 427);
             this.Controls.Add(this.textBox1);
             this.Controls.Add(this.buttonTransmitDateTime);
+            this.Controls.Add(this.buttonTransmitHeartbeat);
             this.Controls.Add(this.buttonTransmitDate);
             this.Controls.Add(this.textBoxTxValue);
             this.Controls.Add(this.buttonTransmitValue);
@@ -145,6 +158,7 @@
         private System.Windows.Forms.TextBox textBoxTxValue;
         private System.Windows.Forms.Button buttonTransmitDate;
         private System.Windows.Forms.Button buttonTransmitDateTime;
+        private System.Windows.Forms.Button buttonTransmitHeartbeat;
         private System.Windows.Forms.TextBox textBox1;
     }
 }

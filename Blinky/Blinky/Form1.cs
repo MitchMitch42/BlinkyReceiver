@@ -27,6 +27,7 @@ namespace Blinky
         {
             buttonTransmitTimestamp.Enabled = false;
             buttonTransmitDate.Enabled = false;
+            buttonTransmitHeartbeat.Enabled = false;
             buttonTransmitDateTime.Enabled = false;
             buttonTransmitValue.Enabled = false;
             Data = new List<UInt32> { UInt32.Parse(textBoxTxValue.Text.Replace("0x", ""), System.Globalization.NumberStyles.HexNumber) };
@@ -38,6 +39,7 @@ namespace Blinky
         {
             buttonTransmitTimestamp.Enabled = false;
             buttonTransmitDate.Enabled = false;
+            buttonTransmitHeartbeat.Enabled = false;
             buttonTransmitDateTime.Enabled = false;
             buttonTransmitValue.Enabled = false;
             Data = new List<UInt32> { CreateTimeData(out StartAt, 1) };
@@ -48,9 +50,22 @@ namespace Blinky
         {
             buttonTransmitTimestamp.Enabled = false;
             buttonTransmitDate.Enabled = false;
+            buttonTransmitHeartbeat.Enabled = false;
             buttonTransmitDateTime.Enabled = false;
             buttonTransmitValue.Enabled = false;
             Data = new List<UInt32> { CreateDateData(2) };
+            StartAt = DateTime.Now;
+            backgroundWorker1.RunWorkerAsync();
+        }
+
+        private void buttonTransmitHeartbeat_Click(object sender, EventArgs e)
+        {
+            buttonTransmitTimestamp.Enabled = false;
+            buttonTransmitDate.Enabled = false;
+            buttonTransmitHeartbeat.Enabled = false;
+            buttonTransmitDateTime.Enabled = false;
+            buttonTransmitValue.Enabled = false;
+            Data = new List<UInt32> { CreateHeartbeatData() };
             StartAt = DateTime.Now;
             backgroundWorker1.RunWorkerAsync();
         }
@@ -59,6 +74,7 @@ namespace Blinky
         {
             buttonTransmitTimestamp.Enabled = false;
             buttonTransmitDate.Enabled = false;
+            buttonTransmitHeartbeat.Enabled = false;
             buttonTransmitDateTime.Enabled = false;
             buttonTransmitValue.Enabled = false;
             Data = CreateDateTimeData(out StartAt);
@@ -69,6 +85,7 @@ namespace Blinky
         {
             buttonTransmitTimestamp.Enabled = true;
             buttonTransmitDate.Enabled = true;
+            buttonTransmitHeartbeat.Enabled = true;
             buttonTransmitDateTime.Enabled = true;
             buttonTransmitValue.Enabled = true;
         }
@@ -198,6 +215,13 @@ namespace Blinky
             int year = dt.Year - 2020;
 
             UInt32 data = (UInt32)((header << 28) + (day << 23) + (month << 19) + (year << 13));
+            data += CalculateChecksum(data);
+            return data;
+        }
+
+        private UInt32 CreateHeartbeatData()
+        {
+            UInt32 data = 3u << 28;
             data += CalculateChecksum(data);
             return data;
         }

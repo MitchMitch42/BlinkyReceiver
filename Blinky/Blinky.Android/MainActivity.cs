@@ -145,6 +145,14 @@ public sealed class MainActivity : Activity
             var data = TransmissionProtocol.CreateDateData(DateTime.Now, 2);
             await StartTransmissionAsync(new[] { data }, DateTime.Now, frequency);
         });
+        var heartbeatButton = MakeButton("Transmit heartbeat", async () =>
+        {
+            if (!TryGetFrequency(out var frequency))
+                return;
+
+            var data = TransmissionProtocol.CreateHeartbeatData();
+            await StartTransmissionAsync(new[] { data }, DateTime.Now, frequency);
+        });
         var dateTimeButton = MakeButton("Date/time", async () =>
         {
             if (!TryGetFrequency(out var frequency))
@@ -171,9 +179,10 @@ public sealed class MainActivity : Activity
             await StartTransmissionAsync(new[] { data }, DateTime.Now, frequency);
         });
 
-        _transmitButtons = new[] { timestampButton, dateButton, dateTimeButton, valueButton };
+        _transmitButtons = new[] { timestampButton, dateButton, heartbeatButton, dateTimeButton, valueButton };
         _home.AddView(timestampButton, MatchWrap(Dp(8)));
         _home.AddView(dateButton, MatchWrap(Dp(8)));
+        _home.AddView(heartbeatButton, MatchWrap(Dp(8)));
         _home.AddView(dateTimeButton, MatchWrap(Dp(8)));
         _home.AddView(valueButton, MatchWrap(Dp(8)));
         SetContentView(_home);
@@ -360,6 +369,9 @@ internal static class TransmissionProtocol
             | ((uint)(now.Year - 2020) << 13);
         return AddChecksum(data);
     }
+
+    public static uint CreateHeartbeatData() =>
+        AddChecksum(3u << 28);
 
     public static bool TryParseHexData(string? text, out uint data)
     {
