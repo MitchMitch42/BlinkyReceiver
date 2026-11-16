@@ -43,7 +43,6 @@
             this.textBoxLongitude = new System.Windows.Forms.TextBox();
             this.comboBoxTimeZone = new System.Windows.Forms.ComboBox();
             this.buttonTransmitTimeZone = new System.Windows.Forms.Button();
-            this.labelTimeZone = new System.Windows.Forms.Label();
             this.textBox1 = new System.Windows.Forms.TextBox();
             this.buttonTest = new System.Windows.Forms.Button();
             this.textBox2 = new System.Windows.Forms.TextBox();
@@ -53,9 +52,9 @@
             // pictureBox1
             // 
             this.pictureBox1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.pictureBox1.Location = new System.Drawing.Point(12, 246);
+            this.pictureBox1.Location = new System.Drawing.Point(12, 265);
             this.pictureBox1.Name = "pictureBox1";
-            this.pictureBox1.Size = new System.Drawing.Size(363, 264);
+            this.pictureBox1.Size = new System.Drawing.Size(363, 340);
             this.pictureBox1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
             this.pictureBox1.TabIndex = 0;
             this.pictureBox1.TabStop = false;
@@ -132,7 +131,7 @@
             // buttonTransmitLocation
             // 
             this.buttonTransmitLocation.BackColor = System.Drawing.SystemColors.ControlDarkDark;
-            this.buttonTransmitLocation.Location = new System.Drawing.Point(13, 157);
+            this.buttonTransmitLocation.Location = new System.Drawing.Point(12, 154);
             this.buttonTransmitLocation.Name = "buttonTransmitLocation";
             this.buttonTransmitLocation.Size = new System.Drawing.Size(155, 23);
             this.buttonTransmitLocation.TabIndex = 10;
@@ -144,38 +143,38 @@
             // 
             this.labelLatitude.AutoSize = true;
             this.labelLatitude.ForeColor = System.Drawing.SystemColors.ControlLightLight;
-            this.labelLatitude.Location = new System.Drawing.Point(174, 102);
+            this.labelLatitude.Location = new System.Drawing.Point(174, 157);
             this.labelLatitude.Name = "labelLatitude";
-            this.labelLatitude.Size = new System.Drawing.Size(45, 13);
+            this.labelLatitude.Size = new System.Drawing.Size(20, 13);
             this.labelLatitude.TabIndex = 11;
-            this.labelLatitude.Text = "Latitude";
+            this.labelLatitude.Text = "LA";
             // 
             // textBoxLatitude
             // 
             this.textBoxLatitude.BackColor = System.Drawing.SystemColors.ControlDarkDark;
             this.textBoxLatitude.ForeColor = System.Drawing.SystemColors.ControlLightLight;
-            this.textBoxLatitude.Location = new System.Drawing.Point(232, 99);
+            this.textBoxLatitude.Location = new System.Drawing.Point(200, 156);
             this.textBoxLatitude.Name = "textBoxLatitude";
-            this.textBoxLatitude.Size = new System.Drawing.Size(143, 20);
+            this.textBoxLatitude.Size = new System.Drawing.Size(75, 20);
             this.textBoxLatitude.TabIndex = 12;
             // 
             // labelLongitude
             // 
             this.labelLongitude.AutoSize = true;
             this.labelLongitude.ForeColor = System.Drawing.SystemColors.ControlLightLight;
-            this.labelLongitude.Location = new System.Drawing.Point(174, 131);
+            this.labelLongitude.Location = new System.Drawing.Point(284, 160);
             this.labelLongitude.Name = "labelLongitude";
-            this.labelLongitude.Size = new System.Drawing.Size(54, 13);
+            this.labelLongitude.Size = new System.Drawing.Size(21, 13);
             this.labelLongitude.TabIndex = 13;
-            this.labelLongitude.Text = "Longitude";
+            this.labelLongitude.Text = "LO";
             // 
             // textBoxLongitude
             // 
             this.textBoxLongitude.BackColor = System.Drawing.SystemColors.ControlDarkDark;
             this.textBoxLongitude.ForeColor = System.Drawing.SystemColors.ControlLightLight;
-            this.textBoxLongitude.Location = new System.Drawing.Point(232, 128);
+            this.textBoxLongitude.Location = new System.Drawing.Point(311, 157);
             this.textBoxLongitude.Name = "textBoxLongitude";
-            this.textBoxLongitude.Size = new System.Drawing.Size(143, 20);
+            this.textBoxLongitude.Size = new System.Drawing.Size(75, 20);
             this.textBoxLongitude.TabIndex = 14;
             // 
             // comboBoxTimeZone
@@ -184,15 +183,15 @@
             this.comboBoxTimeZone.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.comboBoxTimeZone.ForeColor = System.Drawing.SystemColors.ControlLightLight;
             this.comboBoxTimeZone.FormattingEnabled = true;
-            this.comboBoxTimeZone.Location = new System.Drawing.Point(174, 157);
+            this.comboBoxTimeZone.Location = new System.Drawing.Point(173, 185);
             this.comboBoxTimeZone.Name = "comboBoxTimeZone";
-            this.comboBoxTimeZone.Size = new System.Drawing.Size(143, 21);
+            this.comboBoxTimeZone.Size = new System.Drawing.Size(213, 21);
             this.comboBoxTimeZone.TabIndex = 15;
             // 
             // buttonTransmitTimeZone
             // 
             this.buttonTransmitTimeZone.BackColor = System.Drawing.SystemColors.ControlDarkDark;
-            this.buttonTransmitTimeZone.Location = new System.Drawing.Point(13, 186);
+            this.buttonTransmitTimeZone.Location = new System.Drawing.Point(12, 183);
             this.buttonTransmitTimeZone.Name = "buttonTransmitTimeZone";
             this.buttonTransmitTimeZone.Size = new System.Drawing.Size(155, 23);
             this.buttonTransmitTimeZone.TabIndex = 16;
@@ -200,20 +199,10 @@
             this.buttonTransmitTimeZone.UseVisualStyleBackColor = false;
             this.buttonTransmitTimeZone.Click += new System.EventHandler(this.buttonTransmitTimeZone_Click);
             // 
-            // labelTimeZone
-            // 
-            this.labelTimeZone.AutoSize = true;
-            this.labelTimeZone.ForeColor = System.Drawing.SystemColors.ControlLightLight;
-            this.labelTimeZone.Location = new System.Drawing.Point(174, 191);
-            this.labelTimeZone.Name = "labelTimeZone";
-            this.labelTimeZone.Size = new System.Drawing.Size(56, 13);
-            this.labelTimeZone.TabIndex = 17;
-            this.labelTimeZone.Text = "Time zone";
-            // 
             // textBox1
             // 
             this.textBox1.BackColor = System.Drawing.SystemColors.ControlDarkDark;
-            this.textBox1.Location = new System.Drawing.Point(12, 516);
+            this.textBox1.Location = new System.Drawing.Point(12, 611);
             this.textBox1.Name = "textBox1";
             this.textBox1.ReadOnly = true;
             this.textBox1.Size = new System.Drawing.Size(131, 20);
@@ -222,11 +211,11 @@
             // buttonTest
             // 
             this.buttonTest.BackColor = System.Drawing.SystemColors.ControlDarkDark;
-            this.buttonTest.Location = new System.Drawing.Point(288, 217);
+            this.buttonTest.Location = new System.Drawing.Point(278, 611);
             this.buttonTest.Name = "buttonTest";
-            this.buttonTest.Size = new System.Drawing.Size(87, 23);
+            this.buttonTest.Size = new System.Drawing.Size(97, 23);
             this.buttonTest.TabIndex = 9;
-            this.buttonTest.Text = "Test";
+            this.buttonTest.Text = "White";
             this.buttonTest.UseVisualStyleBackColor = false;
             this.buttonTest.Click += new System.EventHandler(this.buttonTest_Click);
             // 
@@ -237,7 +226,8 @@
             this.textBox2.Location = new System.Drawing.Point(410, 15);
             this.textBox2.Multiline = true;
             this.textBox2.Name = "textBox2";
-            this.textBox2.Size = new System.Drawing.Size(249, 495);
+            this.textBox2.ScrollBars = System.Windows.Forms.ScrollBars.Both;
+            this.textBox2.Size = new System.Drawing.Size(249, 590);
             this.textBox2.TabIndex = 18;
             // 
             // Form1
@@ -245,7 +235,7 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.ActiveCaptionText;
-            this.ClientSize = new System.Drawing.Size(671, 545);
+            this.ClientSize = new System.Drawing.Size(679, 639);
             this.Controls.Add(this.textBox2);
             this.Controls.Add(this.buttonTest);
             this.Controls.Add(this.textBoxLongitude);
@@ -253,7 +243,6 @@
             this.Controls.Add(this.textBoxLatitude);
             this.Controls.Add(this.labelLatitude);
             this.Controls.Add(this.buttonTransmitTimeZone);
-            this.Controls.Add(this.labelTimeZone);
             this.Controls.Add(this.comboBoxTimeZone);
             this.Controls.Add(this.buttonTransmitLocation);
             this.Controls.Add(this.textBox1);
@@ -289,7 +278,6 @@
         private System.Windows.Forms.TextBox textBoxLongitude;
         private System.Windows.Forms.ComboBox comboBoxTimeZone;
         private System.Windows.Forms.Button buttonTransmitTimeZone;
-        private System.Windows.Forms.Label labelTimeZone;
         private System.Windows.Forms.TextBox textBox1;
         private System.Windows.Forms.Button buttonTest;
         private System.Windows.Forms.TextBox textBox2;
