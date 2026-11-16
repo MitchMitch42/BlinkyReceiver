@@ -26,9 +26,10 @@ namespace Blinky
             "Guam", "Tarawa", "Auckland"
         };
 
-        double Frequency = 128.0 / 6.0;
+        double Frequency = 128.0 / 8.0;
         List<UInt32> Data;
         DateTime StartAt;
+        StringBuilder sb = new StringBuilder();
 
         public Form1()
         {
@@ -175,6 +176,8 @@ namespace Blinky
 
         private void backgroundWorker1_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
+            textBox2.Text = sb.ToString().Substring(0, sb.Length - 1);
+
             buttonTransmitTimestamp.Enabled = true;
             buttonTransmitDate.Enabled = true;
             buttonTransmitHeartbeat.Enabled = true;
@@ -190,7 +193,7 @@ namespace Blinky
             {
                 textBox1.Text = string.Join(" / ", Data.Select(data => "0x" + data.ToString("X")));
             }));
-            
+
             double ticksPerMicrosecond = (double)Stopwatch.Frequency / 1_000_000;
             double microseconds = 1000.0 * 1000.0 / Frequency;
             long intervalTicks = (long)(microseconds * ticksPerMicrosecond);
@@ -199,6 +202,29 @@ namespace Blinky
             {
                 HighResTransmission(data, intervalTicks, StartAt);
                 StartAt = DateTime.Now;
+            }
+
+            sb.Clear();
+            sb.AppendLine("1, 1, 1, 1, 1, 1, 1, 1, //start bit" );
+            sb.AppendLine();
+            int cnt = 1;
+            foreach (UInt32 data in Data)
+            {
+                for (int i = 0; i < 32; i++)
+                {
+                    if (((data << i) & 0x80000000) == 0)
+                        sb.AppendLine("0, 0, 0, 0, 0, 0, 0, 0,");
+                    else
+                        sb.AppendLine("1, 1, 1, 1, 1, 1, 1, 1,");
+                }
+
+                if (cnt++ < Data.Count())
+                {
+                    sb.AppendLine();
+                    sb.AppendLine("0, 0, 0, 0, 0, 0, 0, 0, //stop bit");
+                    sb.AppendLine("1, 1, 1, 1, 1, 1, 1, 1, //start bit");
+                    sb.AppendLine();
+                }
             }
         }
         
@@ -211,8 +237,7 @@ namespace Blinky
             {
 
             }
-
-
+            
             long nextTick = Stopwatch.GetTimestamp();
 
             for (int i = -1; i < 33; i++)
@@ -293,7 +318,7 @@ namespace Blinky
         {
             //return CreateDebugData(out startAt);
             UInt32 dateData = CreateDateData(2, true);
-            UInt32 timeData = CreateTimeData(out startAt, 1, false, 33);
+            UInt32 timeData = CreateTimeData(out startAt, 1, false, 67);
             return new List<UInt32> { dateData, timeData };
         }
 
@@ -329,8 +354,13 @@ namespace Blinky
         {
             startAt = DateTime.Now;
             UInt32 d1 = CreateDateData(2, true);
-            UInt32 d2 = CreateDateData(2, false);
-            return new List<UInt32> { d1, d2 };
+            UInt32 d2 = CreateDateData(2, true);
+            UInt32 d3 = CreateDateData(2, true);
+            UInt32 d4 = CreateDateData(2, true);
+            UInt32 d5 = CreateDateData(2, true);
+            UInt32 d6 = CreateDateData(2, true);
+            UInt32 d7 = CreateDateData(2, true);
+            return new List<UInt32> { d1, d2, d3, d4, d5, d6, d7 };
         }
 
         /// <summary>

@@ -46,6 +46,7 @@
             this.labelTimeZone = new System.Windows.Forms.Label();
             this.textBox1 = new System.Windows.Forms.TextBox();
             this.buttonTest = new System.Windows.Forms.Button();
+            this.textBox2 = new System.Windows.Forms.TextBox();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
             // 
@@ -205,7 +206,7 @@
             this.labelTimeZone.ForeColor = System.Drawing.SystemColors.ControlLightLight;
             this.labelTimeZone.Location = new System.Drawing.Point(174, 191);
             this.labelTimeZone.Name = "labelTimeZone";
-            this.labelTimeZone.Size = new System.Drawing.Size(57, 13);
+            this.labelTimeZone.Size = new System.Drawing.Size(56, 13);
             this.labelTimeZone.TabIndex = 17;
             this.labelTimeZone.Text = "Time zone";
             // 
@@ -229,12 +230,23 @@
             this.buttonTest.UseVisualStyleBackColor = false;
             this.buttonTest.Click += new System.EventHandler(this.buttonTest_Click);
             // 
+            // textBox2
+            // 
+            this.textBox2.BackColor = System.Drawing.SystemColors.ControlDarkDark;
+            this.textBox2.ForeColor = System.Drawing.SystemColors.ControlLightLight;
+            this.textBox2.Location = new System.Drawing.Point(410, 15);
+            this.textBox2.Multiline = true;
+            this.textBox2.Name = "textBox2";
+            this.textBox2.Size = new System.Drawing.Size(249, 495);
+            this.textBox2.TabIndex = 18;
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.ActiveCaptionText;
-            this.ClientSize = new System.Drawing.Size(388, 545);
+            this.ClientSize = new System.Drawing.Size(671, 545);
+            this.Controls.Add(this.textBox2);
             this.Controls.Add(this.buttonTest);
             this.Controls.Add(this.textBoxLongitude);
             this.Controls.Add(this.labelLongitude);
@@ -280,5 +292,6 @@
         private System.Windows.Forms.Label labelTimeZone;
         private System.Windows.Forms.TextBox textBox1;
         private System.Windows.Forms.Button buttonTest;
+        private System.Windows.Forms.TextBox textBox2;
     }
 }
