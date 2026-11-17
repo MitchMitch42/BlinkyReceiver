@@ -35,7 +35,7 @@ namespace Blinky
             "Guam", "Tarawa", "Auckland"
         };
 
-        double Frequency = 128.0 / 8.0;
+        double Frequency = 64.0 / 8.0;
         List<UInt32> Data;
         DateTime StartAt;
         StringBuilder sb = new StringBuilder();
@@ -74,7 +74,7 @@ namespace Blinky
             buttonTransmitTimeZone.Enabled = false;
             buttonTransmitValue.Enabled = false;
             buttonTest.Enabled = false;
-            Data = new List<UInt32> { CreateTimeData(out StartAt, BlinkReceiverHeaderTimeSet) };
+            Data = new List<UInt32> { CreateTimeData(out StartAt, BlinkReceiverHeaderTimeSet, false, CalculateBitOffset(1), false) };
             backgroundWorker1.RunWorkerAsync();
         }
 
@@ -103,7 +103,7 @@ namespace Blinky
             buttonTransmitTimeZone.Enabled = false;
             buttonTransmitValue.Enabled = false;
             buttonTest.Enabled = false;
-            Data = new List<UInt32> { CreateHeartbeatData(out StartAt) };
+            Data = new List<UInt32> { CreateHeartbeatData(out StartAt, out _) };
             backgroundWorker1.RunWorkerAsync();
         }
 
@@ -257,7 +257,7 @@ namespace Blinky
             
             long nextTick = Stopwatch.GetTimestamp();
 
-            for (int i = -1; i < 33; i++)
+            for (int i = -1; i < 34; i++)
             {
                 // Busy-wait until the next microsecond interval is reached
                 while (Stopwatch.GetTimestamp() < nextTick)
@@ -272,9 +272,13 @@ namespace Blinky
                 }
                 else if(i == 32)
                 {
-                    DateTime dt = DateTime.Now;
+                    //DateTime dt = DateTime.Now;
                     //back to black at end of transmission
                     Show(Color.Black);
+                }
+                else if (i == 33)
+                {
+                    break;
                 }
                 else
                 {
@@ -299,6 +303,26 @@ namespace Blinky
             }));
         }
 
+        private int CalculateBitOffset(int i)
+        {
+            return i * 33 + (i - 1);
+        }
+
+        private UInt32 CreateTimeData(out DateTime startAt, int header, bool multipacket, int bitOffset, bool immediate)
+        {
+            double ms = (1000.0 / Frequency);
+            DateTime dt = DateTime.Now;
+
+            startAt = dt.AddMilliseconds(1000 - dt.Millisecond);
+            //startAt = dt.AddMilliseconds(2000 - dt.Millisecond - ((bitoffset * 1000.0 / Frequency) % 1000));
+            //startAt = startAt.AddMilliseconds(1000 - startAt.Millisecond);
+
+            dt = startAt;
+            dt = dt.AddMilliseconds(bitOffset * ms);
+
+            return CreateTimeData(dt, header, multipacket, immediate);
+        }
+
         /// <summary>
         /// Create 32 bit containing timestamp
         /// Packet type in bits 26-29; bit 31 indicates another packet follows and bit 30 executes this packet first
@@ -308,18 +332,8 @@ namespace Blinky
         /// 1 Bit Unused
         /// 8 Bit Checksum
         /// </summary>
-        private UInt32 CreateTimeData(out DateTime startAt, int header, bool multipacket = false, int bitOffset = 33, bool immediate = false)
+        private UInt32 CreateTimeData(DateTime dt, int header, bool multipacket, bool immediate)
         {
-            double ms = (1000.0 / Frequency);
-            DateTime dt = DateTime.Now;
-            
-            startAt = dt.AddMilliseconds(1000 - dt.Millisecond);
-            //startAt = dt.AddMilliseconds(2000 - dt.Millisecond - ((bitoffset * 1000.0 / Frequency) % 1000));
-            //startAt = startAt.AddMilliseconds(1000 - startAt.Millisecond);
-
-
-            dt = startAt;
-            dt = dt.AddMilliseconds(bitOffset * ms);
             int sec = dt.Second;
             int min = dt.Minute;
             int hour = dt.Hour;
@@ -335,18 +349,21 @@ namespace Blinky
 
         private List<UInt32> CreateDateTimeData(out DateTime startAt)
         {
-            return CreateDebugData(out startAt);
-            UInt32 dateData = CreateDateData(BlinkReceiverHeaderDateSet, true);
-            UInt32 timeData = CreateTimeData(out startAt, BlinkReceiverHeaderTimeSet, bitOffset: 67, immediate: true);
-            return new List<UInt32> { dateData, timeData };
+            //return CreateDebugData(out startAt);
+
+            UInt32 heartbeatData= CreateHeartbeatData(out startAt, out DateTime endAt, CalculateBitOffset(3), true);
+            UInt32 timeData = CreateTimeData(endAt, BlinkReceiverHeaderTimeSet, true, false);
+            UInt32 dateData = CreateDateData(endAt, BlinkReceiverHeaderDateSet, false);
+            return new List<UInt32> { heartbeatData, timeData, dateData};
         }
 
-        private UInt32 CreateHeartbeatData(out DateTime startAt, int bitOffset = 33, bool multipacket = false)
+        private UInt32 CreateHeartbeatData(out DateTime startAt, out DateTime endAt, int bitOffset = 33, bool multipacket = false)
         {
             double ms = (1000.0 / Frequency);
             DateTime dt = DateTime.Now;
             double offsetMs = (dt.Millisecond + bitOffset * ms) % 1000;
             startAt = dt.AddMilliseconds(2000 - offsetMs);
+            endAt = startAt.AddMilliseconds(bitOffset * ms);
 
             UInt32 data = (UInt32)BlinkReceiverHeaderHeartbeat << 26;
             if (multipacket)
@@ -398,8 +415,9 @@ namespace Blinky
             UInt32 timeData = CreateTimeData(
                 out startAt,
                 BlinkReceiverHeaderTimeSet,
-                multipacket: true,
-                bitOffset: packetBitOffset);
+                true,
+                packetBitOffset,
+                false);
             DateTime transmissionTime = startAt.AddMilliseconds(packetBitOffset * 1000.0 / Frequency);
 
             return new List<UInt32>
@@ -410,7 +428,7 @@ namespace Blinky
                 CreateTimeZoneData(15, true),
                 CreatePatchData(0, true, false, true),
                 timeData,
-                CreateHeartbeatData(out _, packetBitOffset, multipacket: true),
+                CreateHeartbeatData(out _, out _, packetBitOffset, multipacket: true),
                 CreateTestData()
             };
         }
