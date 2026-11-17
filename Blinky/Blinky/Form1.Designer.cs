@@ -211,11 +211,11 @@
             // buttonTest
             // 
             this.buttonTest.BackColor = System.Drawing.SystemColors.ControlDarkDark;
-            this.buttonTest.Location = new System.Drawing.Point(278, 611);
+            this.buttonTest.Location = new System.Drawing.Point(13, 212);
             this.buttonTest.Name = "buttonTest";
-            this.buttonTest.Size = new System.Drawing.Size(97, 23);
+            this.buttonTest.Size = new System.Drawing.Size(154, 23);
             this.buttonTest.TabIndex = 9;
-            this.buttonTest.Text = "White";
+            this.buttonTest.Text = "Test";
             this.buttonTest.UseVisualStyleBackColor = false;
             this.buttonTest.Click += new System.EventHandler(this.buttonTest_Click);
             // 
