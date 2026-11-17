@@ -74,7 +74,7 @@ namespace Blinky
             buttonTransmitTimeZone.Enabled = false;
             buttonTransmitValue.Enabled = false;
             buttonTest.Enabled = false;
-            Data = new List<UInt32> { CreateTimeData(out StartAt, BlinkReceiverHeaderTimeSet, false, CalculateBitOffset(1), false) };
+            Data = new List<UInt32> { CreateTimeData(out StartAt, BlinkReceiverHeaderTimeSet, false, CalculateBitOffset(1)) };
             backgroundWorker1.RunWorkerAsync();
         }
 
@@ -308,7 +308,7 @@ namespace Blinky
             return i * 33 + (i - 1);
         }
 
-        private UInt32 CreateTimeData(out DateTime startAt, int header, bool multipacket, int bitOffset, bool immediate)
+        private UInt32 CreateTimeData(out DateTime startAt, int header, bool multipacket, int bitOffset)
         {
             double ms = (1000.0 / Frequency);
             DateTime dt = DateTime.Now;
@@ -320,29 +320,27 @@ namespace Blinky
             dt = startAt;
             dt = dt.AddMilliseconds(bitOffset * ms);
 
-            return CreateTimeData(dt, header, multipacket, immediate);
+            return CreateTimeData(dt, header, multipacket);
         }
 
         /// <summary>
         /// Create 32 bit containing timestamp
-        /// Packet type in bits 26-29; bit 31 indicates another packet follows and bit 30 executes this packet first
+        /// Packet type in bits 27-30; bit 31 indicates another packet follows
         /// 6 Bit Seconds
         /// 6 Bit Minutes
         /// 5 Bit Hours
-        /// 1 Bit Unused
+        /// 2 Bits Unused
         /// 8 Bit Checksum
         /// </summary>
-        private UInt32 CreateTimeData(DateTime dt, int header, bool multipacket, bool immediate)
+        private UInt32 CreateTimeData(DateTime dt, int header, bool multipacket)
         {
             int sec = dt.Second;
             int min = dt.Minute;
             int hour = dt.Hour;
 
-            UInt32 data = (UInt32)((header << 26) + (sec << 20) + (min << 14) + (hour << 9));
+            UInt32 data = (UInt32)((header << 27) + (sec << 21) + (min << 15) + (hour << 10));
             if (multipacket)
                 data |= 0x80000000;
-            if (immediate)
-                data |= 0x40000000;
             data += CalculateChecksum(data);
             return data;
         }
@@ -352,7 +350,7 @@ namespace Blinky
             //return CreateDebugData(out startAt);
 
             UInt32 heartbeatData= CreateHeartbeatData(out startAt, out DateTime endAt, CalculateBitOffset(3), true);
-            UInt32 timeData = CreateTimeData(endAt, BlinkReceiverHeaderTimeSet, true, false);
+            UInt32 timeData = CreateTimeData(endAt, BlinkReceiverHeaderTimeSet, true);
             UInt32 dateData = CreateDateData(endAt, BlinkReceiverHeaderDateSet, false);
             return new List<UInt32> { heartbeatData, timeData, dateData};
         }
@@ -365,7 +363,7 @@ namespace Blinky
             startAt = dt.AddMilliseconds(2000 - offsetMs);
             endAt = startAt.AddMilliseconds(bitOffset * ms);
 
-            UInt32 data = (UInt32)BlinkReceiverHeaderHeartbeat << 26;
+            UInt32 data = (UInt32)BlinkReceiverHeaderHeartbeat << 27;
             if (multipacket)
                 data |= 0x80000000;
             data += CalculateChecksum(data);
@@ -374,7 +372,7 @@ namespace Blinky
 
         private UInt32 CreateLocationData(short value, int header, bool multipacket)
         {
-            UInt32 data = ((UInt32)header << 26) | ((UInt32)(ushort)value << 10);
+            UInt32 data = ((UInt32)header << 27) | ((UInt32)(ushort)value << 11);
             if (multipacket)
                 data |= 0x80000000;
             data += CalculateChecksum(data);
@@ -383,7 +381,7 @@ namespace Blinky
 
         private UInt32 CreateTimeZoneData(byte index, bool multipacket = false)
         {
-            UInt32 data = ((UInt32)BlinkReceiverHeaderSetZone << 26) | ((UInt32)index << 20);
+            UInt32 data = ((UInt32)BlinkReceiverHeaderSetZone << 27) | ((UInt32)index << 21);
             if (multipacket)
                 data |= 0x80000000;
             data += CalculateChecksum(data);
@@ -392,17 +390,17 @@ namespace Blinky
 
         private UInt32 CreateTestData()
         {
-            UInt32 data = (UInt32)BlinkReceiverHeaderTest << 26;
+            UInt32 data = (UInt32)BlinkReceiverHeaderTest << 27;
             data += CalculateChecksum(data);
             return data;
         }
 
         private UInt32 CreatePatchData(byte offset, bool isPlus, bool isSmaller, bool multipacket)
         {
-            UInt32 data = ((UInt32)BlinkReceiverHeaderPatch << 26)
-                | ((UInt32)(isSmaller ? 1 : 0) << 25)
-                | ((UInt32)(isPlus ? 1 : 0) << 24)
-                | ((UInt32)offset << 16);
+            UInt32 data = ((UInt32)BlinkReceiverHeaderPatch << 27)
+                | ((UInt32)(isSmaller ? 1 : 0) << 26)
+                | ((UInt32)(isPlus ? 1 : 0) << 25)
+                | ((UInt32)offset << 17);
             if (multipacket)
                 data |= 0x80000000;
             data += CalculateChecksum(data);
@@ -416,8 +414,7 @@ namespace Blinky
                 out startAt,
                 BlinkReceiverHeaderTimeSet,
                 true,
-                packetBitOffset,
-                false);
+                packetBitOffset);
             DateTime transmissionTime = startAt.AddMilliseconds(packetBitOffset * 1000.0 / Frequency);
 
             return new List<UInt32>
@@ -435,11 +432,11 @@ namespace Blinky
 
         /// <summary>
         /// Create 32 bit containing current date
-        /// Packet type 0x2; bit 31 indicates another packet follows
+        /// Packet type 0x2 in bits 27-30; bit 31 indicates another packet follows
         /// 5 Bit Day
         /// 4 Bit Month
         /// 6 Bit Year (current year - 2020)
-        /// 3 Bit Unused
+        /// 4 Bits Unused
         /// 8 Bit Checksum
         /// </summary>
         private UInt32 CreateDateData(int header, bool multipacket = false)
@@ -453,7 +450,7 @@ namespace Blinky
             int month = dt.Month;
             int year = dt.Year - 2020;
 
-            UInt32 data = (UInt32)((header << 26) + (day << 21) + (month << 17) + (year << 11));
+            UInt32 data = (UInt32)((header << 27) + (day << 22) + (month << 18) + (year << 12));
             if (multipacket)
                 data |= 0x80000000;
             data += CalculateChecksum(data);
