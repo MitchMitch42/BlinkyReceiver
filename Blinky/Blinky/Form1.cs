@@ -465,5 +465,10 @@ namespace Blinky
             StartAt = DateTime.Now;
             backgroundWorker1.RunWorkerAsync();
         }
+
+        private void pictureBox1_Click(object sender, EventArgs e)
+        {
+            Show(Color.White);
+        }
     }
 }
