@@ -1,7 +1,9 @@
 using Android.App;
+using Android.Content;
 using Android.Content.PM;
 using Android.Graphics;
 using Android.Graphics.Drawables;
+using Android.Locations;
 using Android.OS;
 using Android.Text;
 using Android.Views;
@@ -23,6 +25,12 @@ public sealed class MainActivity : Activity
 {
     private const int DefaultReadFrequency = 64;
     private const int DefaultSamplesPerBit = 8;
+    private const int LocationPermissionRequestCode = 42;
+    private static readonly string[] LocationPermissions =
+    {
+        global::Android.Manifest.Permission.AccessFineLocation,
+        global::Android.Manifest.Permission.AccessCoarseLocation
+    };
 
     private LinearLayout? _home;
     private View? _mainTab;
@@ -40,6 +48,7 @@ public sealed class MainActivity : Activity
     private Button[] _transmitButtons = Array.Empty<Button>();
     private Button[] _tabButtons = Array.Empty<Button>();
     private CancellationTokenSource? _transmissionCancellation;
+    private TaskCompletionSource<bool>? _locationPermissionCompletion;
     private bool _transmitting;
     private string _selectedTab = "Main";
 
@@ -72,7 +81,24 @@ public sealed class MainActivity : Activity
     protected override void OnDestroy()
     {
         _transmissionCancellation?.Cancel();
+        _locationPermissionCompletion?.TrySetCanceled();
         base.OnDestroy();
+    }
+
+    public override void OnRequestPermissionsResult(
+        int requestCode,
+        string[] permissions,
+        Permission[] grantResults)
+    {
+        base.OnRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode != LocationPermissionRequestCode)
+            return;
+
+        var permissionGranted =
+            CheckSelfPermission(global::Android.Manifest.Permission.AccessFineLocation) == Permission.Granted
+            || CheckSelfPermission(global::Android.Manifest.Permission.AccessCoarseLocation) == Permission.Granted;
+        _locationPermissionCompletion?.TrySetResult(permissionGranted);
+        _locationPermissionCompletion = null;
     }
 
     private void ApplyImmersiveMode()
@@ -180,6 +206,8 @@ public sealed class MainActivity : Activity
         _latitudeInput = MakeCoordinateInput("Latitude", coordinates);
         _longitudeInput = MakeCoordinateInput("Longitude", coordinates);
         locationCard.AddView(coordinates, MatchWrap(Dp(8)));
+        var gpsButton = MakeActionButton("Use phone GPS", FillCoordinatesFromGpsAsync);
+        locationCard.AddView(gpsButton, MatchWrap(Dp(8)));
         var locationButton = MakeActionButton("Send location", async () =>
         {
             var frequency = GetTransmissionFrequency();
@@ -482,9 +510,10 @@ public sealed class MainActivity : Activity
 
     private EditText MakeCoordinateInput(string label, LinearLayout parent)
     {
-        var textLabel = new TextView(this) { Text = label };
+        var field = new LinearLayout(this) { Orientation = Orientation.Vertical };
+        var textLabel = new TextView(this) { Text = label, TextSize = 13 };
         textLabel.SetTextColor(Color.ParseColor("#C4D0E0"));
-        parent.AddView(textLabel, MatchWrap(Dp(8)));
+        field.AddView(textLabel, MatchWrap(Dp(4)));
 
         var input = new EditText(this)
         {
@@ -496,11 +525,93 @@ public sealed class MainActivity : Activity
         input.SetSingleLine(true);
         input.SetTextColor(Color.White);
         input.SetHintTextColor(Color.ParseColor("#91A0B8"));
-        var inputParams = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WrapContent, 1f);
-        inputParams.LeftMargin = Dp(4);
-        inputParams.RightMargin = Dp(4);
-        parent.AddView(input, inputParams);
+        input.SetPadding(Dp(8), Dp(4), Dp(8), Dp(4));
+        field.AddView(input, MatchWrap());
+
+        var fieldParams = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WrapContent, 1f);
+        fieldParams.LeftMargin = Dp(4);
+        fieldParams.RightMargin = Dp(4);
+        parent.AddView(field, fieldParams);
         return input;
+    }
+
+    private async Task FillCoordinatesFromGpsAsync()
+    {
+        if (!await EnsureLocationPermissionAsync())
+        {
+            ShowAlert("Location permission denied", "Allow location access to use the phone's GPS.");
+            return;
+        }
+
+        if (GetSystemService(Context.LocationService) is not LocationManager locationManager)
+        {
+            ShowAlert("Location unavailable", "This device does not provide a location service.");
+            return;
+        }
+
+        if (!locationManager.IsProviderEnabled(LocationManager.GpsProvider))
+        {
+            ShowAlert("GPS is turned off", "Turn on device location services and try again.");
+            return;
+        }
+
+        var locationCompletion = new TaskCompletionSource<Location>(
+            TaskCreationOptions.RunContinuationsAsynchronously);
+        var listener = new GpsLocationListener(location =>
+            locationCompletion.TrySetResult(location));
+
+        try
+        {
+            locationManager.RequestLocationUpdates(
+                LocationManager.GpsProvider, 0, 0, listener, Looper.MainLooper);
+            var completedTask = await Task.WhenAny(
+                locationCompletion.Task,
+                Task.Delay(TimeSpan.FromSeconds(30)));
+            if (completedTask != locationCompletion.Task)
+            {
+                ShowAlert("GPS timeout", "No GPS fix was received within 30 seconds.");
+                return;
+            }
+
+            var location = await locationCompletion.Task;
+            _latitudeInput!.Text = location.Latitude.ToString("F6", CultureInfo.CurrentCulture);
+            _longitudeInput!.Text = location.Longitude.ToString("F6", CultureInfo.CurrentCulture);
+        }
+        catch (Java.Lang.SecurityException)
+        {
+            ShowAlert("Location permission required", "Allow location access and try again.");
+        }
+        finally
+        {
+            locationManager.RemoveUpdates(listener);
+            listener.Dispose();
+        }
+    }
+
+    private async Task<bool> EnsureLocationPermissionAsync()
+    {
+        if (CheckSelfPermission(global::Android.Manifest.Permission.AccessFineLocation) == Permission.Granted
+            || CheckSelfPermission(global::Android.Manifest.Permission.AccessCoarseLocation) == Permission.Granted)
+        {
+            return true;
+        }
+
+        if (_locationPermissionCompletion is not null)
+            return await _locationPermissionCompletion.Task;
+
+        _locationPermissionCompletion = new TaskCompletionSource<bool>(
+            TaskCreationOptions.RunContinuationsAsynchronously);
+        RequestPermissions(LocationPermissions, LocationPermissionRequestCode);
+        return await _locationPermissionCompletion.Task;
+    }
+
+    private sealed class GpsLocationListener(Action<Location> onLocationChanged)
+        : Java.Lang.Object, ILocationListener
+    {
+        public void OnLocationChanged(Location location) => onLocationChanged(location);
+        public void OnProviderDisabled(string provider) { }
+        public void OnProviderEnabled(string provider) { }
+        public void OnStatusChanged(string? provider, Availability status, Bundle? extras) { }
     }
 
     private bool TryGetLocation(out short latitude, out short longitude)
