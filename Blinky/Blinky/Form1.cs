@@ -16,12 +16,11 @@ namespace Blinky
     {
         private const int BlinkReceiverHeaderTimeSet = 1;
         private const int BlinkReceiverHeaderDateSet = 2;
-        private const int BlinkReceiverHeaderHeartbeat = 3;
         private const int BlinkReceiverHeaderLatitude = 4;
         private const int BlinkReceiverHeaderLongitude = 5;
         private const int BlinkReceiverHeaderSetZone = 6;
         private const int BlinkReceiverHeaderTest = 7;
-        private const int BlinkReceiverHeaderPatch = 8;
+        private const int BlinkReceiverHeaderSetLed = 8;
 
         private static readonly string[] TimeZoneNames =
         {
@@ -53,11 +52,11 @@ namespace Blinky
         {
             buttonTransmitTimestamp.Enabled = false;
             buttonTransmitDate.Enabled = false;
-            buttonTransmitHeartbeat.Enabled = false;
             buttonTransmitDateTime.Enabled = false;
             buttonTransmitLocation.Enabled = false;
             buttonTransmitTimeZone.Enabled = false;
             buttonTransmitValue.Enabled = false;
+            buttonTransmitLed.Enabled = false;
             buttonTest.Enabled = false;
             Data = new List<UInt32> { UInt32.Parse(textBoxTxValue.Text.Replace("0x", ""), System.Globalization.NumberStyles.HexNumber) };
             StartAt = DateTime.Now;
@@ -68,11 +67,11 @@ namespace Blinky
         {
             buttonTransmitTimestamp.Enabled = false;
             buttonTransmitDate.Enabled = false;
-            buttonTransmitHeartbeat.Enabled = false;
             buttonTransmitDateTime.Enabled = false;
             buttonTransmitLocation.Enabled = false;
             buttonTransmitTimeZone.Enabled = false;
             buttonTransmitValue.Enabled = false;
+            buttonTransmitLed.Enabled = false;
             buttonTest.Enabled = false;
             Data = new List<UInt32> { CreateTimeData(out StartAt, BlinkReceiverHeaderTimeSet, false, CalculateBitOffset(1)) };
             backgroundWorker1.RunWorkerAsync();
@@ -82,28 +81,14 @@ namespace Blinky
         {
             buttonTransmitTimestamp.Enabled = false;
             buttonTransmitDate.Enabled = false;
-            buttonTransmitHeartbeat.Enabled = false;
             buttonTransmitDateTime.Enabled = false;
             buttonTransmitLocation.Enabled = false;
             buttonTransmitTimeZone.Enabled = false;
             buttonTransmitValue.Enabled = false;
+            buttonTransmitLed.Enabled = false;
             buttonTest.Enabled = false;
             Data = new List<UInt32> { CreateDateData(BlinkReceiverHeaderDateSet) };
             StartAt = DateTime.Now;
-            backgroundWorker1.RunWorkerAsync();
-        }
-
-        private void buttonTransmitHeartbeat_Click(object sender, EventArgs e)
-        {
-            buttonTransmitTimestamp.Enabled = false;
-            buttonTransmitDate.Enabled = false;
-            buttonTransmitHeartbeat.Enabled = false;
-            buttonTransmitDateTime.Enabled = false;
-            buttonTransmitLocation.Enabled = false;
-            buttonTransmitTimeZone.Enabled = false;
-            buttonTransmitValue.Enabled = false;
-            buttonTest.Enabled = false;
-            Data = new List<UInt32> { CreateHeartbeatData(out StartAt, out _) };
             backgroundWorker1.RunWorkerAsync();
         }
 
@@ -111,11 +96,11 @@ namespace Blinky
         {
             buttonTransmitTimestamp.Enabled = false;
             buttonTransmitDate.Enabled = false;
-            buttonTransmitHeartbeat.Enabled = false;
             buttonTransmitDateTime.Enabled = false;
             buttonTransmitLocation.Enabled = false;
             buttonTransmitTimeZone.Enabled = false;
             buttonTransmitValue.Enabled = false;
+            buttonTransmitLed.Enabled = false;
             buttonTest.Enabled = false;
             Data = CreateDateTimeData(out StartAt);
             backgroundWorker1.RunWorkerAsync();
@@ -141,11 +126,11 @@ namespace Blinky
 
             buttonTransmitTimestamp.Enabled = false;
             buttonTransmitDate.Enabled = false;
-            buttonTransmitHeartbeat.Enabled = false;
             buttonTransmitDateTime.Enabled = false;
             buttonTransmitLocation.Enabled = false;
             buttonTransmitTimeZone.Enabled = false;
             buttonTransmitValue.Enabled = false;
+            buttonTransmitLed.Enabled = false;
             Data = new List<UInt32>
             {
                 CreateLocationData(latitudeValue, BlinkReceiverHeaderLatitude, true),
@@ -169,11 +154,11 @@ namespace Blinky
 
             buttonTransmitTimestamp.Enabled = false;
             buttonTransmitDate.Enabled = false;
-            buttonTransmitHeartbeat.Enabled = false;
             buttonTransmitDateTime.Enabled = false;
             buttonTransmitLocation.Enabled = false;
             buttonTransmitTimeZone.Enabled = false;
             buttonTransmitValue.Enabled = false;
+            buttonTransmitLed.Enabled = false;
             buttonTest.Enabled = false;
             Data = new List<UInt32>
             {
@@ -181,6 +166,31 @@ namespace Blinky
             };
             StartAt = DateTime.Now;
             backgroundWorker1.RunWorkerAsync();
+        }
+
+        private void buttonTransmitLed_Click(object sender, EventArgs e)
+        {
+            buttonTransmitTimestamp.Enabled = false;
+            buttonTransmitDate.Enabled = false;
+            buttonTransmitDateTime.Enabled = false;
+            buttonTransmitLocation.Enabled = false;
+            buttonTransmitTimeZone.Enabled = false;
+            buttonTransmitValue.Enabled = false;
+            buttonTransmitLed.Enabled = false;
+            buttonTest.Enabled = false;
+            
+            if (colorDialog1.ShowDialog() == DialogResult.OK)
+            {
+                Data = new List<UInt32>
+                {
+                    CreateLedData(
+                        (byte)(colorDialog1.Color.R / 17.0 + 0.5),
+                        (byte)(colorDialog1.Color.G / 17.0 + 0.5),
+                        (byte)(colorDialog1.Color.B / 17.0 + 0.5))
+                };
+                StartAt = DateTime.Now;
+                backgroundWorker1.RunWorkerAsync();
+            }
         }
 
         private bool TryParseCoordinate(string text, decimal minimum, decimal maximum, out decimal coordinate)
@@ -196,11 +206,11 @@ namespace Blinky
 
             buttonTransmitTimestamp.Enabled = true;
             buttonTransmitDate.Enabled = true;
-            buttonTransmitHeartbeat.Enabled = true;
             buttonTransmitDateTime.Enabled = true;
             buttonTransmitLocation.Enabled = true;
             buttonTransmitTimeZone.Enabled = true;
             buttonTransmitValue.Enabled = true;
+            buttonTransmitLed.Enabled = true;
             buttonTest.Enabled = true;
         }
 
@@ -222,11 +232,11 @@ namespace Blinky
             }
 
             sb.Clear();
-            sb.AppendLine("1, 1, 1, 1, 1, 1, 1, 1, //start bit" );
-            sb.AppendLine();
             int cnt = 1;
             foreach (UInt32 data in Data)
             {
+                sb.AppendLine("1, 1, 1, 1, 1, 1, 1, 1, //bright start bit");
+                sb.AppendLine("0, 0, 0, 0, 0, 0, 0, 0, //dark start bit");
                 for (int i = 0; i < 32; i++)
                 {
                     if (((data << i) & 0x80000000) == 0)
@@ -239,7 +249,6 @@ namespace Blinky
                 {
                     sb.AppendLine();
                     sb.AppendLine("0, 0, 0, 0, 0, 0, 0, 0, //stop bit");
-                    sb.AppendLine("1, 1, 1, 1, 1, 1, 1, 1, //start bit");
                     sb.AppendLine();
                 }
             }
@@ -257,7 +266,7 @@ namespace Blinky
             
             long nextTick = Stopwatch.GetTimestamp();
 
-            for (int i = -1; i < 34; i++)
+            for (int i = 0; i < 35; i++)
             {
                 // Busy-wait until the next microsecond interval is reached
                 while (Stopwatch.GetTimestamp() < nextTick)
@@ -265,25 +274,18 @@ namespace Blinky
                     // Optional: Thread.SpinWait(1) to reduce power consumption slightly
                 }
 
-                if (i == -1)
+                if (i == 0)
                 {
-                    //rising edge to start transmission
                     Show(Color.White);
                 }
-                else if(i == 32)
+                else if (i == 1 || i == 34)
                 {
-                    //DateTime dt = DateTime.Now;
-                    //back to black at end of transmission
                     Show(Color.Black);
-                }
-                else if (i == 33)
-                {
-                    break;
                 }
                 else
                 {
                     //transmit data bit by bit
-                    if (((data << i) & 0x80000000) == 0)
+                    if (((data << (i - 2)) & 0x80000000) == 0)
                         Show(Color.Black);
                     else
                         Show(Color.White);
@@ -291,8 +293,10 @@ namespace Blinky
 
                 nextTick += intervalTicks; // Schedule next execution
             }
-            
-            DateTime ft = DateTime.Now;
+
+            while (Stopwatch.GetTimestamp() < nextTick)
+            {
+            }
         }
         
         private void Show(Color color)
@@ -305,7 +309,7 @@ namespace Blinky
 
         private int CalculateBitOffset(int i)
         {
-            return i * 33 + (i - 1);
+            return i * 35 - 1;
         }
 
         private UInt32 CreateTimeData(out DateTime startAt, int header, bool multipacket, int bitOffset)
@@ -329,7 +333,8 @@ namespace Blinky
         /// 6 Bit Seconds
         /// 6 Bit Minutes
         /// 5 Bit Hours
-        /// 2 Bits Unused
+        /// 1 Bit Unused
+        /// 1 Bit Sync
         /// 8 Bit Checksum
         /// </summary>
         private UInt32 CreateTimeData(DateTime dt, int header, bool multipacket)
@@ -338,7 +343,7 @@ namespace Blinky
             int min = dt.Minute;
             int hour = dt.Hour;
 
-            UInt32 data = (UInt32)((header << 27) + (sec << 21) + (min << 15) + (hour << 10));
+            UInt32 data = (UInt32)((header << 27) + (sec << 21) + (min << 15) + (hour << 10) + (1 << 9));
             if (multipacket)
                 data |= 0x80000000;
             data += CalculateChecksum(data);
@@ -347,12 +352,19 @@ namespace Blinky
 
         private List<UInt32> CreateDateTimeData(out DateTime startAt)
         {
-            //return CreateDebugData(out startAt);
-
-            UInt32 heartbeatData= CreateHeartbeatData(out startAt, out DateTime endAt, CalculateBitOffset(3), true);
+            int packetBitOffset = CalculateBitOffset(2);
+            UInt32 timeData = CreateTimeData(
+                out startAt,
+                BlinkReceiverHeaderTimeSet,
+                true,
+                packetBitOffset);
+            DateTime transmissionTime = startAt.AddMilliseconds(packetBitOffset * 1000.0 / Frequency);
+            UInt32 dateData = CreateDateData(transmissionTime, BlinkReceiverHeaderDateSet, false);
+            return new List<UInt32> { timeData, dateData };
+/*          UInt32 heartbeatData= CreateHeartbeatData(out startAt, out DateTime endAt, CalculateBitOffset(3), true);
             UInt32 timeData = CreateTimeData(endAt, BlinkReceiverHeaderTimeSet, true);
             UInt32 dateData = CreateDateData(endAt, BlinkReceiverHeaderDateSet, false);
-            return new List<UInt32> { heartbeatData, timeData, dateData};
+            return new List<UInt32> { heartbeatData, timeData, dateData};*/
         }
 
         private UInt32 CreateHeartbeatData(out DateTime startAt, out DateTime endAt, int bitOffset = 33, bool multipacket = false)
@@ -395,12 +407,12 @@ namespace Blinky
             return data;
         }
 
-        private UInt32 CreatePatchData(byte offset, bool isPlus, bool isSmaller, bool multipacket)
+        private UInt32 CreateLedData(byte red, byte green, byte blue, bool multipacket = false)
         {
-            UInt32 data = ((UInt32)BlinkReceiverHeaderPatch << 27)
-                | ((UInt32)(isSmaller ? 1 : 0) << 26)
-                | ((UInt32)(isPlus ? 1 : 0) << 25)
-                | ((UInt32)offset << 17);
+            UInt32 data = ((UInt32)BlinkReceiverHeaderSetLed << 27)
+                | ((UInt32)red << 23)
+                | ((UInt32)green << 19)
+                | ((UInt32)blue << 15);
             if (multipacket)
                 data |= 0x80000000;
             data += CalculateChecksum(data);
@@ -409,7 +421,7 @@ namespace Blinky
 
         private List<UInt32> CreateDebugData(out DateTime startAt)
         {
-            const int packetBitOffset = 8 * 34 - 1;
+            int packetBitOffset = CalculateBitOffset(6);
             UInt32 timeData = CreateTimeData(
                 out startAt,
                 BlinkReceiverHeaderTimeSet,
@@ -423,9 +435,8 @@ namespace Blinky
                 CreateLocationData(1234, BlinkReceiverHeaderLatitude, true),
                 CreateLocationData(-5678, BlinkReceiverHeaderLongitude, true),
                 CreateTimeZoneData(15, true),
-                CreatePatchData(0, true, false, true),
+                CreateLedData(15, 0, 0, true),
                 timeData,
-                CreateHeartbeatData(out _, out _, packetBitOffset, multipacket: true),
                 CreateTestData()
             };
         }
@@ -470,7 +481,7 @@ namespace Blinky
         {
             buttonTransmitTimestamp.Enabled = false;
             buttonTransmitDate.Enabled = false;
-            buttonTransmitHeartbeat.Enabled = false;
+            buttonTransmitLed.Enabled = false;
             buttonTransmitDateTime.Enabled = false;
             buttonTransmitLocation.Enabled = false;
             buttonTransmitTimeZone.Enabled = false;

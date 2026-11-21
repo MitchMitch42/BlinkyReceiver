@@ -35,7 +35,7 @@
             this.textBoxTxValue = new System.Windows.Forms.TextBox();
             this.buttonTransmitDate = new System.Windows.Forms.Button();
             this.buttonTransmitDateTime = new System.Windows.Forms.Button();
-            this.buttonTransmitHeartbeat = new System.Windows.Forms.Button();
+            this.buttonTransmitLed = new System.Windows.Forms.Button();
             this.buttonTransmitLocation = new System.Windows.Forms.Button();
             this.labelLatitude = new System.Windows.Forms.Label();
             this.textBoxLatitude = new System.Windows.Forms.TextBox();
@@ -46,6 +46,7 @@
             this.textBox1 = new System.Windows.Forms.TextBox();
             this.buttonTest = new System.Windows.Forms.Button();
             this.textBox2 = new System.Windows.Forms.TextBox();
+            this.colorDialog1 = new System.Windows.Forms.ColorDialog();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
             // 
@@ -118,16 +119,16 @@
             this.buttonTransmitDateTime.UseVisualStyleBackColor = false;
             this.buttonTransmitDateTime.Click += new System.EventHandler(this.buttonTransmitDateTime_Click);
             // 
-            // buttonTransmitHeartbeat
+            // buttonTransmitLed
             // 
-            this.buttonTransmitHeartbeat.BackColor = System.Drawing.SystemColors.ControlDarkDark;
-            this.buttonTransmitHeartbeat.Location = new System.Drawing.Point(13, 128);
-            this.buttonTransmitHeartbeat.Name = "buttonTransmitHeartbeat";
-            this.buttonTransmitHeartbeat.Size = new System.Drawing.Size(155, 23);
-            this.buttonTransmitHeartbeat.TabIndex = 7;
-            this.buttonTransmitHeartbeat.Text = "Heartbeat";
-            this.buttonTransmitHeartbeat.UseVisualStyleBackColor = false;
-            this.buttonTransmitHeartbeat.Click += new System.EventHandler(this.buttonTransmitHeartbeat_Click);
+            this.buttonTransmitLed.BackColor = System.Drawing.SystemColors.ControlDarkDark;
+            this.buttonTransmitLed.Location = new System.Drawing.Point(13, 128);
+            this.buttonTransmitLed.Name = "buttonTransmitLed";
+            this.buttonTransmitLed.Size = new System.Drawing.Size(155, 23);
+            this.buttonTransmitLed.TabIndex = 7;
+            this.buttonTransmitLed.Text = "Led Color";
+            this.buttonTransmitLed.UseVisualStyleBackColor = false;
+            this.buttonTransmitLed.Click += new System.EventHandler(this.buttonTransmitLed_Click);
             // 
             // buttonTransmitLocation
             // 
@@ -248,7 +249,7 @@
             this.Controls.Add(this.buttonTransmitLocation);
             this.Controls.Add(this.textBox1);
             this.Controls.Add(this.buttonTransmitDateTime);
-            this.Controls.Add(this.buttonTransmitHeartbeat);
+            this.Controls.Add(this.buttonTransmitLed);
             this.Controls.Add(this.buttonTransmitDate);
             this.Controls.Add(this.textBoxTxValue);
             this.Controls.Add(this.buttonTransmitValue);
@@ -271,7 +272,7 @@
         private System.Windows.Forms.TextBox textBoxTxValue;
         private System.Windows.Forms.Button buttonTransmitDate;
         private System.Windows.Forms.Button buttonTransmitDateTime;
-        private System.Windows.Forms.Button buttonTransmitHeartbeat;
+        private System.Windows.Forms.Button buttonTransmitLed;
         private System.Windows.Forms.Button buttonTransmitLocation;
         private System.Windows.Forms.Label labelLatitude;
         private System.Windows.Forms.TextBox textBoxLatitude;
@@ -282,5 +283,6 @@
         private System.Windows.Forms.TextBox textBox1;
         private System.Windows.Forms.Button buttonTest;
         private System.Windows.Forms.TextBox textBox2;
+        private System.Windows.Forms.ColorDialog colorDialog1;
     }
 }
